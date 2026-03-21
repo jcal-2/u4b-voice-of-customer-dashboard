@@ -123,7 +123,7 @@ function OptionList({ options }: { options: { text: string; core: boolean }[] })
             </div>
           ) : (
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, padding: '2px 0' }}>
-              <span style={{ color: '#AAAAAA', fontSize: 9, flexShrink: 0, marginTop: 2 }}>□</span>
+              <span style={{ color: '#AAAAAA', fontSize: 10, flexShrink: 0, marginTop: 1 }}>★</span>
               <span className="text-[11px] leading-[1.4] text-uber-ink-3">{item.text}</span>
             </div>
           )}
