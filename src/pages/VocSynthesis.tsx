@@ -60,15 +60,19 @@ export default function VocSynthesis() {
     const cdjData = cdjStages.map(stage => {
       const stageSignals = data.filter(s => s.cdj_stage === stage);
       const vol = stageSignals.length;
-      const neg = stageSignals.filter(s => s.sentiment === 'Negative').length;
-      const negPct = vol ? Math.round(100 * neg / vol) : 0;
-      const themes = countPipeField(stageSignals.filter(s => s.sentiment === 'Negative'), 'sentiment_themes');
+      const negMixed = stageSignals.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed');
+      const negPct = vol ? Math.round(100 * negMixed.length / vol) : 0;
+      const posCount = stageSignals.filter(s => s.sentiment === 'Positive').length;
+      const neuCount = stageSignals.filter(s => s.sentiment === 'Neutral').length;
+      const negCount = stageSignals.filter(s => s.sentiment === 'Negative').length;
+      const mixCount = stageSignals.filter(s => s.sentiment === 'Mixed').length;
+      const themes = countPipeField(negMixed, 'sentiment_themes');
       const topPain = sortedEntries(themes)[0]?.[0] || '—';
       let risk = 'Low';
-      if (negPct >= 40) risk = 'Critical';
-      else if (negPct >= 30) risk = 'High';
-      else if (negPct >= 20) risk = 'Medium';
-      return { stage, vol, neg, negPct, topPain, risk };
+      if (negPct >= 48) risk = 'Critical';
+      else if (negPct >= 40) risk = 'High';
+      else if (negPct >= 30) risk = 'Medium';
+      return { stage, vol, negPct, topPain, risk, posCount, neuCount, negCount, mixCount };
     });
 
     return { nps, csat, ces, ors, sentimentData, netSentiment, frictionCount, frictionPct: Math.round(100 * frictionCount / total), keyDrivers, sourceCounts, negRateBySource, actionCounts, themes, h1Nps, h2Nps, h1Csat, h2Csat, h1Neg, h2Neg, h1Pos, h2Pos, h1Vol: h1.length, h2Vol: h2.length, cdjData, total };
@@ -258,16 +262,22 @@ export default function VocSynthesis() {
             <tbody>
               {stats.cdjData.map((row) => (
                 <tr key={row.stage} className="border-b border-uber-gray-border">
-                  <td className="font-body text-xs text-uber-ink-2 py-3 px-3">{row.stage}</td>
-                  <td className="font-mono text-xs text-uber-black text-right py-3 px-3">{row.vol}</td>
-                  <td className="font-mono text-xs text-uber-black text-right py-3 px-3">{row.negPct}%</td>
+                  <td className="font-body text-[13px] text-uber-black py-3 px-3">{row.stage}</td>
+                  <td className="font-mono text-[13px] text-uber-ink-2 text-right py-3 px-3">{row.vol}</td>
+                  <td className="font-mono text-[13px] text-uber-ink-2 text-right py-3 px-3">{row.negPct}%</td>
                   <td className="py-3 px-3">
-                    <div className="w-full h-2 bg-uber-gray-border rounded-full overflow-hidden flex">
-                      <div className="h-full" style={{ width: `${100 - row.negPct}%`, backgroundColor: '#06C167' }} />
-                      <div className="h-full" style={{ width: `${row.negPct}%`, backgroundColor: '#E63946' }} />
+                    <div className="w-full h-2 rounded overflow-hidden flex">
+                      {row.vol > 0 && (
+                        <>
+                          <div className="h-full" style={{ width: `${(row.posCount / row.vol) * 100}%`, backgroundColor: '#06C167' }} />
+                          <div className="h-full" style={{ width: `${(row.neuCount / row.vol) * 100}%`, backgroundColor: '#AAAAAA' }} />
+                          <div className="h-full" style={{ width: `${(row.negCount / row.vol) * 100}%`, backgroundColor: '#E63946' }} />
+                          <div className="h-full" style={{ width: `${(row.mixCount / row.vol) * 100}%`, backgroundColor: '#F4A261' }} />
+                        </>
+                      )}
                     </div>
                   </td>
-                  <td className="font-body text-xs text-uber-ink-2 py-3 px-3">{row.topPain}</td>
+                  <td className="font-body text-xs text-uber-ink-3 py-3 px-3">{row.topPain}</td>
                   <td className="text-center py-3 px-3">
                     <RiskBadge risk={row.risk} />
                   </td>
