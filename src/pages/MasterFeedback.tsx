@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useVocData } from '@/context/VocDataContext';
+import { useSearchParams } from 'react-router-dom';
 import LoadingScreen from '@/components/LoadingScreen';
 import { CDJ_STAGES, SOURCE_DISPLAY_MAP } from '@/types/voc';
 import { countPipeField, sortedEntries, getThemeColor, SOURCE_BADGE_COLORS, ACTION_TAG_COLORS, SENTIMENT_COLORS } from '@/lib/voc-utils';
@@ -14,6 +15,7 @@ const DISPLAY_SOURCES = [
 
 export default function MasterFeedback() {
   const { data, loading, error } = useVocData();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedStage, setSelectedStage] = useState('All Stages');
   const [selectedSources, setSelectedSources] = useState<string[]>(['All Sources']);
   const [search, setSearch] = useState('');
@@ -21,6 +23,19 @@ export default function MasterFeedback() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
   const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
+  const [activeTheme, setActiveTheme] = useState<string | null>(null);
+
+  // Read URL params on mount
+  useEffect(() => {
+    const stageParam = searchParams.get('stage');
+    const themeParam = searchParams.get('theme');
+    if (stageParam) setSelectedStage(stageParam);
+    if (themeParam) setActiveTheme(themeParam);
+    // Clear params after applying
+    if (stageParam || themeParam) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     let result = data;
@@ -38,6 +53,9 @@ export default function MasterFeedback() {
     if (activeActionTag) {
       result = result.filter(s => s.action_tag === activeActionTag);
     }
+    if (activeTheme) {
+      result = result.filter(s => Array.isArray(s.sentiment_themes) && s.sentiment_themes.includes(activeTheme));
+    }
     const parseDate = (d: string) => {
       const parts = d.split('/');
       return new Date(+parts[2], +parts[0] - 1, +parts[1]).getTime();
@@ -48,7 +66,7 @@ export default function MasterFeedback() {
       return dateSort === 'desc' ? db - da : da - db;
     });
     return result;
-  }, [data, selectedStage, selectedSources, search, activeActionTag, dateSort]);
+  }, [data, selectedStage, selectedSources, search, activeActionTag, activeTheme, dateSort]);
 
   const toggleSource = (src: string) => {
     if (src === 'All Sources') {
@@ -132,6 +150,15 @@ export default function MasterFeedback() {
                 className="w-full pl-10 pr-4 py-2.5 border border-uber-gray-border rounded-lg font-body text-sm text-uber-ink-2 bg-white focus:outline-none focus:border-uber-green"
               />
             </div>
+            {activeTheme && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-mono text-[11px] text-uber-ink-3">Filtered by theme:</span>
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono bg-[#EBF3FB] text-[#2D6A9F]">
+                  {activeTheme}
+                  <button onClick={() => setActiveTheme(null)} className="ml-1 hover:text-[#E63946] transition-colors">✕</button>
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] text-uber-ink-3">
                 Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} records
