@@ -583,9 +583,19 @@ function ThemeTrendSection({ themeTrends }: { themeTrends: { name: string; h1c: 
 
 function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] }) {
   const { months, metrics } = useMemo(() => {
+    const parseYM = (dateStr: string) => {
+      // Handle M/D/YYYY or YYYY-MM-DD formats
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        const month = parts[0].padStart(2, '0');
+        const year = parts[2]?.length === 4 ? parts[2] : '20' + parts[2];
+        return `${year}-${month}`;
+      }
+      return dateStr.slice(0, 7); // YYYY-MM
+    };
     const byMonth: Record<string, import('@/types/voc').VocSignal[]> = {};
     data.forEach(s => {
-      const m = s.captured_at.slice(0, 7);
+      const m = parseYM(s.captured_at);
       (byMonth[m] ||= []).push(s);
     });
     const sortedMonths = Object.keys(byMonth).sort();
