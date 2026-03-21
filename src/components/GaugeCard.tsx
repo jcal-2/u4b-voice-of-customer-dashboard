@@ -170,13 +170,14 @@ export default function GaugeCard({
           {/* Value text */}
           <text
             x={cx}
-            y={cy - 12}
+            y={cy - 16}
             textAnchor="middle"
             dominantBaseline="middle"
             fill="#000000"
-            fontSize={36}
+            fontSize={42}
             fontFamily="Syne, sans-serif"
             fontWeight={800}
+            letterSpacing="-1"
           >
             {displayValue}
           </text>
