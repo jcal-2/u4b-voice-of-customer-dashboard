@@ -185,9 +185,7 @@ function FeedbackCard({ signal, expanded, onToggle }: { signal: VocSignal; expan
         </div>
         <div className="mt-1.5">
           <p className="font-body text-xs text-uber-ink-3 italic leading-relaxed">
-            <span className="font-display text-base text-uber-ink-4 not-italic select-none">{"\u201C"}</span>
-            {signal.verbatim_text}
-            <span className="font-display text-base text-uber-ink-4 not-italic select-none">{"\u201D"}</span>
+            <span className="text-uber-ink-4 not-italic select-none">{"\u201C"}</span>{signal.verbatim_text}<span className="text-uber-ink-4 not-italic select-none">{"\u201D"}</span>
           </p>
         </div>
       </div>
