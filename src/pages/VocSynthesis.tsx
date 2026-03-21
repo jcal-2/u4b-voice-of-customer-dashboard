@@ -3,7 +3,7 @@ import { useVocData } from '@/context/VocDataContext';
 import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
 import GaugeCard from '@/components/GaugeCard';
-import SignalHeatMatrix from '@/components/SignalHeatMatrix';
+
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function VocSynthesis() {
@@ -259,9 +259,6 @@ export default function VocSynthesis() {
             </div>
           </div>
         </div>
-
-        {/* Signal Heat Matrix */}
-        <SignalHeatMatrix data={data} />
 
         {/* Trend Comparison */}
         <div className="bg-uber-black rounded-uber p-6 text-white">
