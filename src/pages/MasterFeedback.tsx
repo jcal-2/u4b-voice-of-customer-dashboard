@@ -206,53 +206,93 @@ function FeedbackCard({ signal, expanded, onToggle }: { signal: VocSignal; expan
       </div>
 
       {expanded && (
-        <div className="mt-3 space-y-3">
+        <div className="bg-[#FAFAFA] px-4 py-4 rounded-b-xl border-t border-uber-gray-border space-y-3">
 
+          {/* ROW 2 — Survey Details */}
           {signal.survey_id && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-mono text-[10px] bg-uber-gray-card px-2 py-0.5 rounded">{signal.survey_id}</span>
-              {signal.survey_scale_type && <span className="font-mono text-[10px] text-uber-ink-3">{signal.survey_scale_type}</span>}
-              {signal.ces_score && <ScoreBadge type="CES" value={signal.ces_score} />}
-              {signal.ors_score && <ScoreBadge type="ORS" value={signal.ors_score} />}
-              {signal.csat_score !== null && <ScoreBadge type="CSAT" value={signal.csat_score} />}
-              {signal.nps_score !== null && <ScoreBadge type="NPS" value={signal.nps_score} />}
+            <div>
+              <div className="font-mono text-[9px] text-uber-ink-4 uppercase tracking-[0.1em] mb-1.5">Survey Details</div>
+              <div className="flex items-start gap-6">
+                <div>
+                  <div className="font-mono text-[9px] text-uber-ink-4 uppercase mb-0.5">Survey ID</div>
+                  <span className="font-mono text-[11px] bg-uber-gray-card text-uber-ink-2 px-2 py-0.5 rounded">{signal.survey_id}</span>
+                </div>
+                {signal.survey_scale_type && (
+                  <div>
+                    <div className="font-mono text-[9px] text-uber-ink-4 uppercase mb-0.5">Scale</div>
+                    <span className="font-body text-[11px] text-uber-ink-3">{signal.survey_scale_type}</span>
+                  </div>
+                )}
+                <div>
+                  <div className="font-mono text-[9px] text-uber-ink-4 uppercase mb-0.5">Score</div>
+                  {signal.ces_score && <ScoreBadge type="CES" value={signal.ces_score} />}
+                  {signal.ors_score && <ScoreBadge type="ORS" value={signal.ors_score} />}
+                  {signal.csat_score !== null && <ScoreBadge type="CSAT" value={signal.csat_score} />}
+                  {signal.nps_score !== null && <ScoreBadge type="NPS" value={signal.nps_score} />}
+                </div>
+              </div>
             </div>
           )}
 
+          {/* ROW 3 — Key Drivers */}
           {signal.key_drivers_selected.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {signal.key_drivers_selected.map(d => (
-                <span key={d} className="rounded-pill px-2 py-0.5 text-[10px] font-mono bg-uber-blue-light text-uber-blue">{d}</span>
-              ))}
+            <div>
+              <div className="font-mono text-[9px] text-uber-ink-4 uppercase tracking-[0.1em] mb-1.5">Key Drivers Cited</div>
+              <div className="flex flex-wrap gap-1.5">
+                {signal.key_drivers_selected.map(d => (
+                  <span key={d} className="rounded-pill px-2.5 py-0.5 text-[11px] font-body bg-uber-blue-light text-uber-blue">{d}</span>
+                ))}
+              </div>
             </div>
           )}
 
+          {/* ROW 4 — Follow-up */}
           {signal.conditional_follow_up_response && (
-            <div className="bg-uber-red-light text-uber-red rounded-lg p-2.5 font-body text-xs">
-              {signal.conditional_follow_up_response}
+            <div>
+              <div className="font-mono text-[9px] text-uber-red uppercase tracking-[0.1em] mb-1.5">Follow-Up Response</div>
+              <div className="bg-uber-red-light text-uber-red rounded-lg p-3 font-body text-xs leading-relaxed">
+                {signal.conditional_follow_up_response}
+              </div>
             </div>
           )}
 
-          <div className="flex flex-wrap gap-1">
-            {signal.sentiment_themes.map(t => {
-              const tc = getThemeColor(t);
-              return <span key={t} className="rounded-pill px-2 py-0.5 text-[10px] font-mono" style={{ backgroundColor: tc.bg, color: tc.text }}>{t}</span>;
-            })}
-          </div>
-
-          {signal.action_tag && signal.action_tag !== 'None' && (
-            <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono" style={{ backgroundColor: actionColors.bg, color: actionColors.text }}>{signal.action_tag}</span>
-          )}
-
-          {signal.active_u4b_drivers.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {signal.active_u4b_drivers.map(d => (
-                <span key={d} className="rounded-md px-2 py-0.5 text-[10px] font-mono bg-uber-gray-card text-uber-ink-3">{d}</span>
-              ))}
+          {/* ROW 5 — Sentiment Themes */}
+          {signal.sentiment_themes.length > 0 && (
+            <div>
+              <div className="font-mono text-[9px] text-uber-ink-4 uppercase tracking-[0.1em] mb-1.5">Sentiment Themes</div>
+              <div className="flex flex-wrap gap-1.5">
+                {signal.sentiment_themes.map(t => {
+                  const tc = getThemeColor(t);
+                  return <span key={t} className="rounded-pill px-2.5 py-0.5 text-[10px] font-mono" style={{ backgroundColor: tc.bg, color: tc.text }}>{t}</span>;
+                })}
+              </div>
             </div>
           )}
 
-          <div className="font-mono text-[10px] text-uber-ink-4">
+          {/* ROW 6 — Action Tag + U4B Drivers */}
+          {((signal.action_tag && signal.action_tag !== 'None') || signal.active_u4b_drivers.length > 0) && (
+            <div className="flex gap-8">
+              {signal.action_tag && signal.action_tag !== 'None' && (
+                <div>
+                  <div className="font-mono text-[9px] text-uber-ink-4 uppercase tracking-[0.1em] mb-1.5">Action Tag</div>
+                  <span className="rounded-pill px-2.5 py-0.5 text-[10px] font-mono font-semibold" style={{ backgroundColor: actionColors.bg, color: actionColors.text }}>{signal.action_tag}</span>
+                </div>
+              )}
+              {signal.active_u4b_drivers.length > 0 && (
+                <div>
+                  <div className="font-mono text-[9px] text-uber-ink-4 uppercase tracking-[0.1em] mb-1.5">Active U4B Drivers</div>
+                  <div className="flex flex-wrap gap-1">
+                    {signal.active_u4b_drivers.map(d => (
+                      <span key={d} className="rounded-md px-2 py-0.5 text-[10px] font-mono bg-uber-gray-card text-uber-ink-3">{d}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ROW 7 — Account Meta */}
+          <div className="font-mono text-[10px] text-uber-ink-4 pt-1 border-t border-uber-gray-border">
             {signal.role} · {signal.bu_segment} · {signal.product_division} · {signal.acquisition_type} · {signal.tenure_years !== null ? `${signal.tenure_years} yrs` : '—'}
           </div>
         </div>
