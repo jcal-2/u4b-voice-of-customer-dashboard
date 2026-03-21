@@ -18,7 +18,7 @@ export default function MasterFeedback() {
   const [selectedSources, setSelectedSources] = useState<string[]>(['All Sources']);
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(25);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
   const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
 
@@ -154,8 +154,8 @@ export default function MasterFeedback() {
               <FeedbackCard
                 key={signal.signal_id}
                 signal={signal}
-                expanded={expandedId === signal.signal_id}
-                onToggle={() => setExpandedId(expandedId === signal.signal_id ? null : signal.signal_id)}
+                expanded={expandedIds.has(signal.signal_id)}
+                onToggle={() => setExpandedIds(prev => { const next = new Set(prev); next.has(signal.signal_id) ? next.delete(signal.signal_id) : next.add(signal.signal_id); return next; })}
               />
             ))}
 
@@ -171,7 +171,7 @@ export default function MasterFeedback() {
 
           {/* Right: Insights Panel */}
           <div className="lg:col-span-2 lg:sticky lg:top-20 lg:self-start space-y-6">
-            <InsightsPanel data={filtered} stageLabel={selectedStage} sourceLabel={selectedSources.join(', ')} onSelectSignal={(id) => setExpandedId(id)} activeActionTag={activeActionTag} onActionTagClick={(tag) => setActiveActionTag(activeActionTag === tag ? null : tag)} />
+            <InsightsPanel data={filtered} stageLabel={selectedStage} sourceLabel={selectedSources.join(', ')} onSelectSignal={(id) => setExpandedIds(prev => new Set(prev).add(id))} activeActionTag={activeActionTag} onActionTagClick={(tag) => setActiveActionTag(activeActionTag === tag ? null : tag)} />
           </div>
         </div>
       </div>
