@@ -353,7 +353,7 @@ export default function VocSynthesis() {
           </div>
 
           {/* Monthly KPI Trends */}
-          <MonthlyKpiTrends data={data} />
+          <MonthlyKpiTrends data={data} overallNps={stats.nps.score} overallCsatAvg={stats.csat.avg} overallCesYesPct={stats.ces.yesPct} overallOrsYesPct={stats.ors.yesPct} />
 
           {/* Action Urgency Panel */}
           <ActionUrgencyPanel actionCounts={stats.actionCounts} />
@@ -581,17 +581,26 @@ function ThemeTrendSection({ themeTrends }: { themeTrends: { name: string; h1c: 
   );
 }
 
-function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] }) {
-  const { months, metrics } = useMemo(() => {
+function MonthlyKpiTrends({ data, overallNps, overallCsatAvg, overallCesYesPct, overallOrsYesPct }: { data: import('@/types/voc').VocSignal[]; overallNps: number; overallCsatAvg: number; overallCesYesPct: number; overallOrsYesPct: number }) {
+  const { metrics } = useMemo(() => {
     const parseYM = (dateStr: string) => {
-      // Handle M/D/YYYY or YYYY-MM-DD formats
       if (dateStr.includes('/')) {
         const parts = dateStr.split('/');
         const month = parts[0].padStart(2, '0');
         const year = parts[2]?.length === 4 ? parts[2] : '20' + parts[2];
         return `${year}-${month}`;
       }
-      return dateStr.slice(0, 7); // YYYY-MM
+      return dateStr.slice(0, 7);
+    };
+    const toComparable = (dateStr: string) => {
+      if (dateStr.includes('/')) {
+        const parts = dateStr.split('/');
+        const y = parts[2]?.length === 4 ? parts[2] : '20' + parts[2];
+        const m = parts[0].padStart(2, '0');
+        const d = parts[1].padStart(2, '0');
+        return `${y}-${m}-${d}`;
+      }
+      return dateStr;
     };
     const byMonth: Record<string, import('@/types/voc').VocSignal[]> = {};
     data.forEach(s => {
@@ -614,8 +623,6 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
     sortedMonths.forEach(ym => {
       const sigs = byMonth[ym];
       const label = fmt(ym);
-
-      // NPS
       const npsSigs = sigs.filter(s => s.nps_score !== null);
       npsTotal += npsSigs.length;
       if (npsSigs.length >= 3) {
@@ -623,24 +630,18 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
         const d = npsSigs.filter(s => s.nps_score! <= 6).length;
         npsData.push({ month: label, value: Math.round(100 * (p / npsSigs.length - d / npsSigs.length)) });
       } else { npsData.push({ month: label, value: null }); }
-
-      // CSAT
       const csatSigs = sigs.filter(s => s.csat_score !== null);
       csatTotal += csatSigs.length;
       if (csatSigs.length >= 3) {
         const avg = csatSigs.reduce((a, s) => a + s.csat_score!, 0) / csatSigs.length;
         csatData.push({ month: label, value: Math.round(avg * 10) / 10 });
       } else { csatData.push({ month: label, value: null }); }
-
-      // CES
       const cesSigs = sigs.filter(s => s.ces_score !== null);
       cesTotal += cesSigs.length;
       if (cesSigs.length >= 3) {
         const yes = cesSigs.filter(s => s.ces_score === 'Yes').length;
         cesData.push({ month: label, value: Math.round(100 * yes / cesSigs.length) });
       } else { cesData.push({ month: label, value: null }); }
-
-      // ORS
       const orsSigs = sigs.filter(s => s.ors_score !== null);
       orsTotal += orsSigs.length;
       if (orsSigs.length >= 3) {
@@ -649,31 +650,48 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
       } else { orsData.push({ month: label, value: null }); }
     });
 
-    const last = (arr: { value: number | null }[]) => {
-      for (let i = arr.length - 1; i >= 0; i--) if (arr[i].value !== null) return arr[i].value;
-      return null;
-    };
-    const secondLast = (arr: { value: number | null }[]) => {
-      let found = 0;
-      for (let i = arr.length - 1; i >= 0; i--) {
-        if (arr[i].value !== null) { found++; if (found === 2) return arr[i].value; }
-      }
-      return null;
-    };
-
     const filterValid = (arr: { month: string; value: number | null }[]) =>
       arr.filter((d): d is { month: string; value: number } => d.value !== null);
 
+    // H1/H2 delta computation
+    const h1 = data.filter(s => toComparable(s.captured_at) < '2025-07-01');
+    const h2 = data.filter(s => toComparable(s.captured_at) >= '2025-07-01');
+
+    const computeNps = (sigs: import('@/types/voc').VocSignal[]) => {
+      const scored = sigs.filter(s => s.nps_score !== null);
+      if (!scored.length) return 0;
+      return Math.round(100 * (scored.filter(s => s.nps_score! >= 9).length / scored.length - scored.filter(s => s.nps_score! <= 6).length / scored.length));
+    };
+    const computeCsat = (sigs: import('@/types/voc').VocSignal[]) => {
+      const scored = sigs.filter(s => s.csat_score !== null);
+      if (!scored.length) return 0;
+      return Math.round(scored.reduce((a, s) => a + s.csat_score!, 0) / scored.length * 10) / 10;
+    };
+    const computeCes = (sigs: import('@/types/voc').VocSignal[]) => {
+      const scored = sigs.filter(s => s.ces_score !== null);
+      if (!scored.length) return 0;
+      return Math.round(100 * scored.filter(s => s.ces_score === 'Yes').length / scored.length);
+    };
+    const computeOrs = (sigs: import('@/types/voc').VocSignal[]) => {
+      const scored = sigs.filter(s => s.ors_score !== null);
+      if (!scored.length) return 0;
+      return Math.round(100 * scored.filter(s => s.ors_score === 'Yes').length / scored.length);
+    };
+
+    const npsDelta = computeNps(h2) - computeNps(h1);
+    const csatDelta = Math.round((computeCsat(h2) - computeCsat(h1)) * 10) / 10;
+    const cesDelta = computeCes(h2) - computeCes(h1);
+    const orsDelta = computeOrs(h2) - computeOrs(h1);
+
     return {
-      months: sortedMonths.map(fmt),
       metrics: [
-        { name: 'NPS Score', color: '#F4A261', data: filterValid(npsData), current: last(npsData), prev: secondLast(npsData), total: npsTotal, target: 'TGT: +32', fmt: (v: number) => (v > 0 ? '+' : '') + v },
-        { name: 'CSAT Average', color: '#2D6A9F', data: filterValid(csatData), current: last(csatData), prev: secondLast(csatData), total: csatTotal, target: 'TGT: 7.5', fmt: (v: number) => v.toFixed(1) },
-        { name: 'CES Yes%', color: '#7B4F9E', data: filterValid(cesData), current: last(cesData), prev: secondLast(cesData), total: cesTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
-        { name: 'ORS Yes%', color: '#2A9D8F', data: filterValid(orsData), current: last(orsData), prev: secondLast(orsData), total: orsTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+        { name: 'NPS Score', color: '#F4A261', data: filterValid(npsData), current: overallNps, delta: npsDelta, total: npsTotal, target: 'TGT: +32', fmt: (v: number) => (v > 0 ? '+' : '') + v },
+        { name: 'CSAT Average', color: '#2D6A9F', data: filterValid(csatData), current: overallCsatAvg, delta: csatDelta, total: csatTotal, target: 'TGT: 7.5', fmt: (v: number) => v.toFixed(1) },
+        { name: 'CES Yes%', color: '#7B4F9E', data: filterValid(cesData), current: overallCesYesPct, delta: cesDelta, total: cesTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+        { name: 'ORS Yes%', color: '#2A9D8F', data: filterValid(orsData), current: overallOrsYesPct, delta: orsDelta, total: orsTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
       ],
     };
-  }, [data]);
+  }, [data, overallNps, overallCsatAvg, overallCesYesPct, overallOrsYesPct]);
 
   return (
     <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
@@ -682,18 +700,17 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
 
       <div className="divide-y divide-[#F6F6F6]">
         {metrics.map(m => {
-          const delta = m.current !== null && m.prev !== null ? Math.round((m.current - m.prev) * 10) / 10 : null;
           return (
             <div key={m.name} className="flex items-center gap-2 py-2.5">
               {/* Left */}
               <div className="w-[100px] flex-shrink-0">
                 <div className="font-body text-[12px] font-semibold text-uber-black">{m.name}</div>
                 <div className="font-display text-[20px] font-bold" style={{ color: m.color }}>
-                  {m.current !== null ? m.fmt(m.current) : '—'}
+                  {m.fmt(m.current)}
                 </div>
-                {delta !== null && (
-                  <div className="font-mono text-[10px]" style={{ color: delta >= 0 ? '#06C167' : '#E63946' }}>
-                    {delta >= 0 ? '▲' : '▼'} {delta > 0 ? '+' : ''}{delta}
+                {m.delta !== 0 && (
+                  <div className="font-mono text-[10px]" style={{ color: m.delta > 0 ? '#06C167' : '#E63946' }}>
+                    {m.delta > 0 ? '▲' : '▼'} {m.delta > 0 ? '+' : ''}{m.name.includes('%') ? m.delta + 'pp' : m.delta}
                   </div>
                 )}
               </div>
