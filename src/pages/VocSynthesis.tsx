@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useVocData } from '@/context/VocDataContext';
 import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
@@ -45,6 +45,32 @@ export default function VocSynthesis() {
     const actionCounts = countByField(data, 'action_tag');
     const themes = countPipeField(data, 'sentiment_themes');
 
+    // Theme trend H1 vs H2
+    const POSITIVE_THEMES = ['Cost Savings Win', 'Expansion Opportunity', 'Proactive Onboarding'];
+    const h1Themes = countPipeField(h1, 'sentiment_themes');
+    const h2Themes = countPipeField(h2, 'sentiment_themes');
+    const allThemeNames = Array.from(new Set([...Object.keys(h1Themes), ...Object.keys(h2Themes)]));
+    const themeTrends = allThemeNames.map(name => {
+      const h1c = h1Themes[name] || 0;
+      const h2c = h2Themes[name] || 0;
+      const total = h1c + h2c;
+      const pctChange = h1c === 0 ? (h2c > 0 ? 100 : 0) : Math.round(((h2c - h1c) / h1c) * 100);
+      const isPositive = POSITIVE_THEMES.includes(name);
+      let trendLabel: string;
+      let trendBg: string;
+      let trendText: string;
+      if (pctChange > 25) {
+        if (isPositive) { trendLabel = '↑ Positive'; trendBg = '#E8F9F0'; trendText = '#028A47'; }
+        else { trendLabel = '↑ Growing'; trendBg = '#FEECEE'; trendText = '#E63946'; }
+      } else if (pctChange < -25) {
+        if (isPositive) { trendLabel = '↓ Declining'; trendBg = '#FEECEE'; trendText = '#E63946'; }
+        else { trendLabel = '↓ Improving'; trendBg = '#E8F9F0'; trendText = '#028A47'; }
+      } else {
+        trendLabel = '→ Stable'; trendBg = '#F6F6F6'; trendText = '#717171';
+      }
+      return { name, h1c, h2c, total, pctChange, trendLabel, trendBg, trendText };
+    }).sort((a, b) => b.h2c - a.h2c);
+
     // H1 vs H2
     const h1 = data.filter(s => s.captured_at < '2025-07-01');
     const h2 = data.filter(s => s.captured_at >= '2025-07-01');
@@ -77,7 +103,7 @@ export default function VocSynthesis() {
       return { stage, vol, negPct, topPain, risk, posCount, neuCount, negCount, mixCount };
     });
 
-    return { nps, csat, ces, ors, sentimentData, netSentiment, frictionCount, frictionPct: Math.round(100 * frictionCount / total), keyDrivers, sourceCounts, negRateBySource, actionCounts, themes, h1Nps, h2Nps, h1Csat, h2Csat, h1Neg, h2Neg, h1Pos, h2Pos, h1Vol: h1.length, h2Vol: h2.length, cdjData, total };
+    return { nps, csat, ces, ors, sentimentData, netSentiment, frictionCount, frictionPct: Math.round(100 * frictionCount / total), keyDrivers, sourceCounts, negRateBySource, actionCounts, themes, h1Nps, h2Nps, h1Csat, h2Csat, h1Neg, h2Neg, h1Pos, h2Pos, h1Vol: h1.length, h2Vol: h2.length, cdjData, total, themeTrends };
   }, [data]);
 
   if (loading || error) return <LoadingScreen />;
