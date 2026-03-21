@@ -171,9 +171,9 @@ export default function VocSynthesis() {
               { end: 100, color: '#06C167' },
             ]}
             breakdownRows={[
-              { label: 'Yes ✓', dotColor: '#2A9D8F', value: `${stats.ors.yesPct}%` },
-              { label: 'No ✗', dotColor: '#E63946', value: `${stats.ors.noPct}%` },
-              { label: 'Unsure ?', dotColor: '#AAAAAA', value: `${stats.ors.unsurePct}%` },
+              { label: 'Yes ✓', dotColor: '#2A9D8F', valueColor: '#2A9D8F', value: `${stats.ors.yesPct}%` },
+              { label: 'No ✗', dotColor: '#E63946', valueColor: '#E63946', value: `${stats.ors.noPct}%` },
+              { label: 'Unsure ?', dotColor: '#AAAAAA', valueColor: '#AAAAAA', value: `${stats.ors.unsurePct}%` },
             ]}
           />
         </div>
