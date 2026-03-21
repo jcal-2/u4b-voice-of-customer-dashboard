@@ -114,9 +114,9 @@ export default function VocSynthesis() {
             subtitle="Below average — industry avg +32"
             target={{ value: 32, label: "Target +32" }}
             breakdownRows={[
-              { label: 'Promoters (9–10)', dotColor: '#06C167', value: `${stats.nps.pPct}%`, count: stats.nps.promoters },
-              { label: 'Passives (7–8)', dotColor: '#AAAAAA', value: `${stats.nps.paPct}%`, count: stats.nps.passives },
-              { label: 'Detractors (0–6)', dotColor: '#E63946', value: `${stats.nps.dPct}%`, count: stats.nps.detractors },
+              { label: 'Promoters (9–10)', dotColor: '#06C167', valueColor: '#06C167', value: `${stats.nps.pPct}%`, count: stats.nps.promoters },
+              { label: 'Passives (7–8)', dotColor: '#AAAAAA', valueColor: '#AAAAAA', value: `${stats.nps.paPct}%`, count: stats.nps.passives },
+              { label: 'Detractors (0–6)', dotColor: '#E63946', valueColor: '#E63946', value: `${stats.nps.dPct}%`, count: stats.nps.detractors },
             ]}
           />
           <GaugeCard
@@ -130,10 +130,10 @@ export default function VocSynthesis() {
             subtitle={`Out of 10 · ${stats.csat.total} responses`}
             target={{ value: 7.5, label: "Target 7.5" }}
             breakdownRows={[
-              { label: 'Promoters (9–10)', dotColor: '#2D6A9F', value: `${stats.csat.pPct}%`, count: stats.csat.promoters },
-              { label: 'Passives (7–8)', dotColor: '#AAAAAA', value: `${stats.csat.paPct}%`, count: stats.csat.passives },
-              { label: 'Detractors (0–6)', dotColor: '#E63946', value: `${stats.csat.dPct}%`, count: stats.csat.detractors },
-              { label: 'CSAT NPS-style:', dotColor: '#000000', value: `${stats.csat.score > 0 ? '+' : ''}${stats.csat.score}`, bold: true },
+              { label: 'Promoters (9–10)', dotColor: '#2D6A9F', valueColor: '#2D6A9F', value: `${stats.csat.pPct}%`, count: stats.csat.promoters },
+              { label: 'Passives (7–8)', dotColor: '#AAAAAA', valueColor: '#AAAAAA', value: `${stats.csat.paPct}%`, count: stats.csat.passives },
+              { label: 'Detractors (0–6)', dotColor: '#E63946', valueColor: '#E63946', value: `${stats.csat.dPct}%`, count: stats.csat.detractors },
+              { label: 'CSAT NPS-style:', dotColor: stats.csat.score >= 0 ? '#06C167' : '#E63946', value: `${stats.csat.score > 0 ? '+' : ''}${stats.csat.score}`, bold: true, valueColor: stats.csat.score >= 0 ? '#06C167' : '#E63946' },
             ]}
           />
           <GaugeCard
