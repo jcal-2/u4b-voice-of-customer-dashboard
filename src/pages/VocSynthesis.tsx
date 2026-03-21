@@ -302,7 +302,7 @@ export default function VocSynthesis() {
         </div>
 
         {/* Trend Comparison */}
-        <div className="bg-uber-black rounded-uber p-6 text-white">
+        <div className="bg-uber-black rounded-t-[16px] p-6 text-white">
           <h3 className="font-display text-lg font-bold mb-1">H1 vs H2 Trend Comparison</h3>
           <p className="font-mono text-[11px] text-uber-ink-3 mb-5">Split at Jul 1 2025 · H1: {stats.h1Vol} signals · H2: {stats.h2Vol} signals</p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -353,6 +353,9 @@ export default function VocSynthesis() {
             </div>
           </div>
         </div>
+
+        {/* Theme Trend + Narrative Row */}
+        <ThemeTrendSection themeTrends={stats.themeTrends} />
 
         {/* CDJ Stage Table */}
         <div className="card-uber p-6">
@@ -443,5 +446,62 @@ function RiskBadge({ risk }: { risk: string }) {
     <span className="rounded-pill px-2 py-0.5 font-mono text-[10px] font-medium" style={{ backgroundColor: s.bg, color: s.text }}>
       {risk}
     </span>
+  );
+}
+
+function ThemeTrendSection({ themeTrends }: { themeTrends: { name: string; h1c: number; h2c: number; total: number; pctChange: number; trendLabel: string; trendBg: string; trendText: string }[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? themeTrends : themeTrends.slice(0, 10);
+
+  return (
+    <div className="-mt-8 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Left: Theme Trend H1 vs H2 */}
+      <div className="bg-white rounded-[16px] border border-[#EBEBEB] p-5">
+        <h4 style={{ fontFamily: 'Syne, sans-serif', fontSize: 16, fontWeight: 700, color: '#000' }}>Theme Trend: H1 vs H2</h4>
+        <p style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#AAAAAA', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, marginTop: 4 }}>
+          THEME · H1 COUNT → H2 COUNT · TREND
+        </p>
+        <div>
+          {visible.map((t, i) => (
+            <div key={t.name} className="flex items-center gap-3" style={{ padding: '8px 0', borderBottom: i < visible.length - 1 ? '1px solid #F6F6F6' : 'none' }}>
+              <span className="flex-1 truncate" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#333' }}>{t.name}</span>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#AAAAAA', minWidth: 48, textAlign: 'right' }}>H1: {t.h1c}</span>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, color: '#000', fontWeight: 600, minWidth: 48, textAlign: 'right' }}>H2: {t.h2c}</span>
+              <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, fontWeight: 700, backgroundColor: t.trendBg, color: t.trendText, borderRadius: 20, padding: '2px 8px', whiteSpace: 'nowrap' }}>{t.trendLabel}</span>
+            </div>
+          ))}
+        </div>
+        {themeTrends.length > 10 && (
+          <button onClick={() => setShowAll(!showAll)} className="mt-3 text-[13px] font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#06C167', background: 'none', border: 'none', cursor: 'pointer' }}>
+            {showAll ? 'Show less' : 'Show all'}
+          </button>
+        )}
+      </div>
+
+      {/* Right: Trend Narrative */}
+      <div className="bg-white rounded-[16px] border border-[#EBEBEB] p-5">
+        <h4 style={{ fontFamily: 'Syne, sans-serif', fontSize: 16, fontWeight: 700, color: '#000', marginBottom: 16 }}>Trend Narrative</h4>
+        <div className="space-y-4">
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#333', lineHeight: 1.7 }}>
+            <span style={{ color: '#000', fontWeight: 700 }}>What improved: </span>
+            NPS jumped 16 points from H1 to H2, the single most important signal in the dataset. Cost Savings Win mentions grew, suggesting the value proposition is becoming more tangible for accounts past the 12-month mark. Expansion Opportunity signals also rose — indicating that successfully deployed accounts are becoming advocates for program growth.
+          </p>
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#333', lineHeight: 1.7 }}>
+            <span style={{ color: '#E63946', fontWeight: 700 }}>What got worse: </span>
+            Dashboard Visibility mentions grew 19% H1→H2, Invoicing &amp; Support Friction grew 16%, and Poor Fit / Churn Signals grew 40%. These are the three themes that most directly threaten revenue — and all three are accelerating. The NPS improvement may be masking structural churn risk building underneath.
+          </p>
+          <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#333', lineHeight: 1.7 }}>
+            <span style={{ color: '#2D6A9F', fontWeight: 700 }}>What's new in H2: </span>
+            The ≤6 Month accounts (Perplexity AI, AfriCert Logistics, Mercado Libre, ByteDance, Delivery Hero) are generating early churn signals — a pattern consistent with Self-Serve SMB onboarding without dedicated CS support.
+          </p>
+          <div style={{ backgroundColor: '#FEF3E8', borderRadius: 10, padding: '14px 16px', marginTop: 16 }}>
+            <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, color: '#7a4500', lineHeight: 1.7 }}>
+              <span style={{ color: '#F4A261', fontWeight: 700 }}>Bottom line: </span>
+              The trajectory is improving on relationship metrics but deteriorating on operational metrics. If Dashboard Visibility, Billing Friction, and Adoption Barriers are not addressed in the next two quarters, the NPS gain will stall or reverse — particularly as Mid-Market and SMB accounts approach renewal in H2 2026.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
