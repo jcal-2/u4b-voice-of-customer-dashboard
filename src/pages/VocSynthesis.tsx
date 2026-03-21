@@ -357,27 +357,35 @@ export default function VocSynthesis() {
         {/* Theme Trend + Narrative Row */}
         <ThemeTrendSection themeTrends={stats.themeTrends} />
 
-        {/* CDJ Stage Table */}
-        <div className="card-uber p-6">
+        {/* CDJ Stage Table — Transposed: stages as columns */}
+        <div className="card-uber p-6 overflow-x-auto">
           <h3 className="font-display text-base font-bold text-uber-black mb-4">Negativity by CDJ Stage</h3>
           <table className="w-full">
             <thead>
               <tr className="bg-uber-gray-card">
-                <th className="text-left font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Stage</th>
-                <th className="text-right font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Volume</th>
-                <th className="text-right font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Neg %</th>
-                <th className="text-left font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Sentiment</th>
-                <th className="text-left font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Primary Pain</th>
-                <th className="text-center font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Risk</th>
+                <th className="text-left font-mono text-[11px] text-uber-ink-3 uppercase tracking-wider py-2 px-3">Metric</th>
+                {stats.cdjData.map((row) => (
+                  <th key={row.stage} className="text-center font-mono text-[10px] text-uber-ink-3 uppercase tracking-wider py-2 px-2 min-w-[120px]">{row.stage}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {stats.cdjData.map((row) => (
-                <tr key={row.stage} className="border-b border-uber-gray-border">
-                  <td className="font-body text-[13px] text-uber-black py-3 px-3">{row.stage}</td>
-                  <td className="font-mono text-[13px] text-uber-ink-2 text-right py-3 px-3">{row.vol}</td>
-                  <td className="font-mono text-[13px] text-uber-ink-2 text-right py-3 px-3">{row.negPct}%</td>
-                  <td className="py-3 px-3">
+              <tr className="border-b border-uber-gray-border">
+                <td className="font-body text-[13px] text-uber-black py-3 px-3">Volume</td>
+                {stats.cdjData.map((row) => (
+                  <td key={row.stage} className="font-mono text-[13px] text-uber-ink-2 text-center py-3 px-2">{row.vol}</td>
+                ))}
+              </tr>
+              <tr className="border-b border-uber-gray-border">
+                <td className="font-body text-[13px] text-uber-black py-3 px-3">Neg %</td>
+                {stats.cdjData.map((row) => (
+                  <td key={row.stage} className="font-mono text-[13px] text-uber-ink-2 text-center py-3 px-2">{row.negPct}%</td>
+                ))}
+              </tr>
+              <tr className="border-b border-uber-gray-border">
+                <td className="font-body text-[13px] text-uber-black py-3 px-3">Sentiment</td>
+                {stats.cdjData.map((row) => (
+                  <td key={row.stage} className="py-3 px-2">
                     <div className="w-full h-2 rounded overflow-hidden flex">
                       {row.vol > 0 && (
                         <>
@@ -389,12 +397,22 @@ export default function VocSynthesis() {
                       )}
                     </div>
                   </td>
-                  <td className="font-body text-xs text-uber-ink-3 py-3 px-3">{row.topPain}</td>
-                  <td className="text-center py-3 px-3">
+                ))}
+              </tr>
+              <tr className="border-b border-uber-gray-border">
+                <td className="font-body text-[13px] text-uber-black py-3 px-3">Primary Pain</td>
+                {stats.cdjData.map((row) => (
+                  <td key={row.stage} className="font-body text-xs text-uber-ink-3 text-center py-3 px-2">{row.topPain}</td>
+                ))}
+              </tr>
+              <tr>
+                <td className="font-body text-[13px] text-uber-black py-3 px-3">Risk</td>
+                {stats.cdjData.map((row) => (
+                  <td key={row.stage} className="text-center py-3 px-2">
                     <RiskBadge risk={row.risk} />
                   </td>
-                </tr>
-              ))}
+                ))}
+              </tr>
             </tbody>
           </table>
         </div>
