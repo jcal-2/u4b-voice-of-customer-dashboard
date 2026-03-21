@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function VocSynthesis() {
   const { data, loading, error } = useVocData();
+  const navigate = useNavigate();
 
   const stats = useMemo(() => {
     if (!data.length) return null;
@@ -264,7 +265,7 @@ export default function VocSynthesis() {
                       {/* Row 1 */}
                       <div className="flex items-center justify-between">
                         <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, background: cfg.badgeBg, color: cfg.badgeText, borderRadius: 20, padding: '2px 8px', textTransform: 'uppercase' }}>{cfg.type}</span>
-                        <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 22, fontWeight: 700, color: typeof scoreVal === 'number' ? cfg.scoreColor(scoreVal as number) : (cfg.scoreColor as (v: string) => string)(scoreVal as string) }}>{typeof scoreVal === 'number' ? scoreVal : scoreVal}</span>
+                        <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 22, fontWeight: 700, color: (cfg.scoreColor as any)(scoreVal) }}>{typeof scoreVal === 'number' ? scoreVal : scoreVal}</span>
                       </div>
                       {/* Row 2 */}
                       <div className="mt-1.5" style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#AAAAAA' }}>
