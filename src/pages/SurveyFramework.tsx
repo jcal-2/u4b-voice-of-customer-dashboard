@@ -110,13 +110,14 @@ const SURVEYS: SurveyDef[] = [
 
 function OptionList({ options }: { options: { text: string; core: boolean }[] }) {
   return (
-    <ul className="list-none p-0">
+    <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
       {options.map((o, i) => (
         <li
           key={i}
-          className={`relative text-[11px] leading-[1.4] py-[2px] pl-[14px] ${o.core ? 'font-medium text-uber-black' : 'text-uber-ink-3'}`}
+          style={{ listStyle: 'none', padding: '2px 0', margin: 0 }}
+          className={`text-[11px] leading-[1.4] ${o.core ? 'font-medium text-uber-black' : 'text-uber-ink-3'}`}
         >
-          <span className={`absolute left-0 text-[9px] ${o.core ? 'text-[#06C167]' : 'text-uber-ink-3'}`}>
+          <span className={`inline-block mr-1.5 ${o.core ? 'text-[#2D6A9F] text-[10px]' : 'text-uber-ink-3 text-[9px]'}`}>
             {o.core ? '★' : '□'}
           </span>
           {o.text}
