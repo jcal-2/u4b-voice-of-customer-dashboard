@@ -20,7 +20,7 @@ export default function MasterFeedback() {
   const [visibleCount, setVisibleCount] = useState(25);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
-  const [dateSort, setDateSort] = useState<'desc' | 'asc'>('asc');
+  const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
 
   const filtered = useMemo(() => {
     let result = data;
@@ -38,11 +38,15 @@ export default function MasterFeedback() {
     if (activeActionTag) {
       result = result.filter(s => s.action_tag === activeActionTag);
     }
-    result = [...result].sort((a, b) =>
-      dateSort === 'desc'
-        ? b.captured_at.localeCompare(a.captured_at)
-        : a.captured_at.localeCompare(b.captured_at)
-    );
+    const parseDate = (d: string) => {
+      const parts = d.split('/');
+      return new Date(+parts[2], +parts[0] - 1, +parts[1]).getTime();
+    };
+    result = [...result].sort((a, b) => {
+      const da = parseDate(a.captured_at);
+      const db = parseDate(b.captured_at);
+      return dateSort === 'desc' ? db - da : da - db;
+    });
     return result;
   }, [data, selectedStage, selectedSources, search, activeActionTag, dateSort]);
 
