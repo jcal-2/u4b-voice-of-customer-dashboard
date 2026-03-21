@@ -151,9 +151,9 @@ export default function VocSynthesis() {
               { end: 100, color: '#06C167' },
             ]}
             breakdownRows={[
-              { label: 'Yes ✓', dotColor: '#06C167', value: `${stats.ces.yesPct}%` },
-              { label: 'No ✗', dotColor: '#E63946', value: `${stats.ces.noPct}%` },
-              { label: 'Unsure ?', dotColor: '#AAAAAA', value: `${stats.ces.unsurePct}%` },
+              { label: 'Yes ✓', dotColor: '#06C167', valueColor: '#06C167', value: `${stats.ces.yesPct}%` },
+              { label: 'No ✗', dotColor: '#E63946', valueColor: '#E63946', value: `${stats.ces.noPct}%` },
+              { label: 'Unsure ?', dotColor: '#AAAAAA', valueColor: '#AAAAAA', value: `${stats.ces.unsurePct}%` },
             ]}
           />
           <GaugeCard
