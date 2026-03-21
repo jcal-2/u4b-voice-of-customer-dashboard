@@ -651,13 +651,16 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
       return null;
     };
 
+    const filterValid = (arr: { month: string; value: number | null }[]) =>
+      arr.filter((d): d is { month: string; value: number } => d.value !== null);
+
     return {
       months: sortedMonths.map(fmt),
       metrics: [
-        { name: 'NPS Score', color: '#F4A261', data: npsData, current: last(npsData), prev: secondLast(npsData), total: npsTotal, target: 'TGT: +32', fmt: (v: number) => (v > 0 ? '+' : '') + v },
-        { name: 'CSAT Average', color: '#2D6A9F', data: csatData, current: last(csatData), prev: secondLast(csatData), total: csatTotal, target: 'TGT: 7.5', fmt: (v: number) => v.toFixed(1) },
-        { name: 'CES Yes%', color: '#7B4F9E', data: cesData, current: last(cesData), prev: secondLast(cesData), total: cesTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
-        { name: 'ORS Yes%', color: '#2A9D8F', data: orsData, current: last(orsData), prev: secondLast(orsData), total: orsTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+        { name: 'NPS Score', color: '#F4A261', data: filterValid(npsData), current: last(npsData), prev: secondLast(npsData), total: npsTotal, target: 'TGT: +32', fmt: (v: number) => (v > 0 ? '+' : '') + v },
+        { name: 'CSAT Average', color: '#2D6A9F', data: filterValid(csatData), current: last(csatData), prev: secondLast(csatData), total: csatTotal, target: 'TGT: 7.5', fmt: (v: number) => v.toFixed(1) },
+        { name: 'CES Yes%', color: '#7B4F9E', data: filterValid(cesData), current: last(cesData), prev: secondLast(cesData), total: cesTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+        { name: 'ORS Yes%', color: '#2A9D8F', data: filterValid(orsData), current: last(orsData), prev: secondLast(orsData), total: orsTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
       ],
     };
   }, [data]);
@@ -687,34 +690,34 @@ function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] })
 
               {/* Sparkline */}
               <div className="flex-1 min-w-0">
-                <ResponsiveContainer width="100%" height={48}>
-                  <LineChart data={m.data} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
-                    <Tooltip
-                      content={({ active, payload }) => {
-                        if (!active || !payload?.[0] || payload[0].value === undefined) return null;
-                        const d = payload[0].payload;
-                        if (d.value === null) return null;
-                        return (
-                          <span className="font-mono text-[11px]" style={{ color: m.color }}>
-                            {d.month}: {m.fmt(d.value)}
-                          </span>
-                        );
-                      }}
-                      wrapperStyle={{ outline: 'none', background: 'transparent', border: 'none', boxShadow: 'none' }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="value"
-                      stroke={m.color}
-                      strokeWidth={2}
-                      dot={false}
-                      activeDot={{ r: 4, fill: m.color, stroke: m.color }}
-                      connectNulls={false}
-                      animationDuration={600}
-                      animationEasing="ease-out"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div style={{ width: '100%', height: 48 }}>
+                  <ResponsiveContainer width="100%" height={48}>
+                    <LineChart data={m.data} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                      <Line
+                        type="monotone"
+                        dataKey="value"
+                        stroke={m.color}
+                        strokeWidth={2}
+                        dot={false}
+                        activeDot={{ r: 4, fill: m.color }}
+                        isAnimationActive={true}
+                        animationDuration={600}
+                      />
+                      <Tooltip
+                        content={({ active, payload, label }) => {
+                          if (active && payload && payload.length) {
+                            return (
+                              <div style={{ fontSize: 11, fontFamily: 'DM Mono', color: m.color, background: 'white', padding: '2px 6px', border: '1px solid #EBEBEB', borderRadius: 4 }}>
+                                {label}: {m.fmt(payload[0].value as number)}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </div>
 
               {/* Right */}
