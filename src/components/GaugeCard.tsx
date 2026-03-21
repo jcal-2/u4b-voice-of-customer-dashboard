@@ -161,9 +161,9 @@ export default function GaugeCard({
             dominantBaseline="middle"
             fill="#000000"
             fontSize={56}
-            fontFamily="Syne, sans-serif"
-            fontWeight={800}
-            letterSpacing="-0.04em"
+            fontFamily="DM Sans, sans-serif"
+            fontWeight={700}
+            letterSpacing="-0.03em"
           >
             {displayValue}
           </text>
