@@ -320,7 +320,7 @@ function InsightsPanel({ data, stageLabel, sourceLabel, onSelectSignal, activeAc
               <div
                 key={tag}
                 className={`rounded-xl border p-2.5 text-center cursor-pointer transition-all duration-150 active:scale-[0.97] ${isActive ? 'ring-2 shadow-sm' : 'bg-white border-uber-gray-border hover:border-current'}`}
-                style={isActive ? { borderColor: color, ringColor: color, backgroundColor: `${color}10` } : undefined}
+                style={isActive ? { borderColor: color, ['--tw-ring-color' as string]: color, backgroundColor: `${color}10` } : undefined}
                 onClick={() => onActionTagClick(tag)}
               >
                 <div className="font-display text-xl font-bold" style={{ color }}>{actionCounts[tag] || 0}</div>
