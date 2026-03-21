@@ -3,6 +3,7 @@ import { useVocData } from '@/context/VocDataContext';
 import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
 import GaugeCard from '@/components/GaugeCard';
+import SignalHeatMatrix from '@/components/SignalHeatMatrix';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function VocSynthesis() {
@@ -259,26 +260,8 @@ export default function VocSynthesis() {
           </div>
         </div>
 
-        {/* Theme Frequency */}
-        <div className="card-uber p-6">
-          <h3 className="font-display text-base font-bold text-uber-black mb-4">Sentiment Themes — All Sources</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-            {sortedEntries(stats.themes).map(([theme, count]) => {
-              const tc = getThemeColor(theme);
-              const maxCount = sortedEntries(stats.themes)[0]?.[1] || 1;
-              return (
-                <div key={theme} className="flex items-center gap-2 py-1">
-                  <span className="font-body text-xs text-uber-ink-2 w-48 truncate">{theme}</span>
-                  <div className="flex-1 h-2 bg-uber-gray-border rounded-full overflow-hidden">
-                    <div className="h-full rounded-full" style={{ width: `${Math.round(100 * count / maxCount)}%`, backgroundColor: tc.text }} />
-                  </div>
-                  <span className="font-mono text-xs text-uber-black w-8 text-right">{count}</span>
-                  <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono" style={{ backgroundColor: tc.bg, color: tc.text }}>{theme.split(' ').slice(0, 2).join(' ')}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        {/* Signal Heat Matrix */}
+        <SignalHeatMatrix data={data} />
 
         {/* Trend Comparison */}
         <div className="bg-uber-black rounded-uber p-6 text-white">
