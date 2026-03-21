@@ -55,7 +55,7 @@ export default function MasterFeedback() {
   if (loading || error) return <LoadingScreen />;
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[hsl(0,0%,96%)]">
       {/* CDJ Stage Filter */}
       <div className="bg-uber-black w-full px-6 py-3">
         <div className="max-w-7xl mx-auto">
@@ -166,21 +166,21 @@ function FeedbackCard({ signal, expanded, onToggle }: { signal: VocSignal; expan
   const actionColors = ACTION_TAG_COLORS[signal.action_tag] || { bg: '#F6F6F6', text: '#AAA' };
 
   return (
-    <div className="bg-white rounded-xl border border-uber-gray-border p-3" style={{ borderLeftWidth: 3, borderLeftColor: sentColor }}>
+    <div className="bg-white rounded-xl border-2 border-[hsl(0,0%,85%)] p-4 shadow-[0_1px_3px_hsl(0,0%,0%,0.06)]" style={{ borderLeftWidth: 4, borderLeftColor: sentColor }}>
       <div className="cursor-pointer" onClick={onToggle}>
-        <div className="flex items-center gap-2 flex-wrap mb-1">
-          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono" style={{ backgroundColor: srcColors.bg, color: srcColors.text }}>{signal.feedback_source}</span>
-          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono bg-uber-gray-card text-uber-ink-3">{signal.cdj_stage}</span>
-          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono" style={{ backgroundColor: sentColor + '20', color: sentColor }}>{signal.sentiment}</span>
-          <span className="font-mono text-[11px] text-uber-ink-3 ml-auto">{signal.captured_at}</span>
-          {expanded ? <ChevronDown size={14} className="text-uber-ink-4" /> : <ChevronRight size={14} className="text-uber-ink-4" />}
+        <div className="flex items-center gap-2 flex-wrap mb-1.5">
+          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono font-medium" style={{ backgroundColor: srcColors.bg, color: srcColors.text }}>{signal.feedback_source}</span>
+          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono font-medium bg-uber-gray-card text-uber-ink-2">{signal.cdj_stage}</span>
+          <span className="rounded-pill px-2 py-0.5 text-[10px] font-mono font-medium" style={{ backgroundColor: sentColor + '20', color: sentColor }}>{signal.sentiment}</span>
+          <span className="font-mono text-[11px] text-uber-ink-2 ml-auto">{signal.captured_at}</span>
+          {expanded ? <ChevronDown size={14} className="text-uber-ink-3" /> : <ChevronRight size={14} className="text-uber-ink-3" />}
         </div>
         <div className="flex items-baseline gap-1 flex-wrap">
           <span className="font-body text-[13px] font-bold text-uber-black">{signal.customer_name}</span>
-          <span className="font-body text-xs text-uber-ink-3">· {signal.account_name} · {signal.sales_segment} · {signal.mega_region}</span>
+          <span className="font-body text-xs text-uber-ink-2">· {signal.account_name} · {signal.sales_segment} · {signal.mega_region}</span>
         </div>
-        <p className="font-body text-xs text-uber-ink-2 italic mt-1 line-clamp-2">
-          {signal.verbatim_text.slice(0, 120)}{signal.verbatim_text.length > 120 ? '...' : ''}
+        <p className="font-body text-xs text-uber-ink-3 italic mt-1.5 leading-relaxed">
+          {signal.verbatim_text}
         </p>
       </div>
 
