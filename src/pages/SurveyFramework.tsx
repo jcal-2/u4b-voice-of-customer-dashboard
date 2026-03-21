@@ -292,23 +292,7 @@ export default function SurveyFramework() {
         </div>
       </div>
 
-      {/* ── Driver Bar ── */}
-      <div className="bg-[#111] w-full px-6 py-2.5">
-        <div className="max-w-7xl mx-auto flex items-center gap-2 flex-wrap">
-          <span className="text-[9px] font-bold uppercase tracking-[0.1em] mr-1 whitespace-nowrap text-uber-ink-3 font-mono">
-            U4B Core Drivers:
-          </span>
-          {ALL_DRIVERS.map(d => (
-            <span
-              key={d}
-              className="text-[10px] py-[2px] px-2 rounded-full font-mono"
-              style={{ background: 'rgba(255,255,255,.08)', color: '#717171', border: '0.5px solid rgba(255,255,255,.12)' }}
-            >
-              {d}
-            </span>
-          ))}
-        </div>
-      </div>
+
 
       {/* ── Legend Row ── */}
       <div className="bg-[#F6F6F6] border-b border-[#EBEBEB] w-full px-6 py-2">
