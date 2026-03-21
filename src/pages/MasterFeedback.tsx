@@ -186,9 +186,6 @@ function FeedbackCard({ signal, expanded, onToggle }: { signal: VocSignal; expan
 
       {expanded && (
         <div className="mt-3 space-y-3">
-          <div className="bg-uber-gray-card rounded-lg p-3" style={{ borderLeftWidth: 3, borderLeftColor: sentColor }}>
-            <p className="font-body text-[13px] text-uber-ink-2 italic leading-relaxed">{signal.verbatim_text}</p>
-          </div>
 
           {signal.survey_id && (
             <div className="flex items-center gap-2 flex-wrap">
