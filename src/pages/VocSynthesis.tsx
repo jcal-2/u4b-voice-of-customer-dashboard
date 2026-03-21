@@ -4,7 +4,8 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
 import GaugeCard from '@/components/GaugeCard';
 
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { PieChart, Pie, Cell, AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 export default function VocSynthesis() {
   const { data, loading, error } = useVocData();
@@ -44,6 +45,27 @@ export default function VocSynthesis() {
 
     const actionCounts = countByField(data, 'action_tag');
     const themes = countPipeField(data, 'sentiment_themes');
+
+    // Source health
+    const posBySource: Record<string, number> = {};
+    data.forEach(s => {
+      if (s.sentiment === 'Positive') posBySource[s.feedback_source] = (posBySource[s.feedback_source] || 0) + 1;
+    });
+    const STRUCTURED_SOURCES = ['CES Survey', 'ORS Survey', 'CSAT Survey', 'NPS Survey'];
+    const sourceHealth = Object.entries(sourceTotal)
+      .map(([src, tot]) => ({
+        name: src, total: tot,
+        posPct: Math.round(100 * (posBySource[src] || 0) / tot),
+        negPct: Math.round(100 * (negBySource[src] || 0) / tot),
+        structured: STRUCTURED_SOURCES.includes(src),
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    // Monthly signal volume
+    const monthlyCounts: Record<string, number> = {};
+    data.forEach(s => { const m = s.captured_at.slice(0, 7); monthlyCounts[m] = (monthlyCounts[m] || 0) + 1; });
+    const monthlyData = Object.entries(monthlyCounts).sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count }));
+    const peakMonth = monthlyData.reduce((max, m) => m.count > max.count ? m : max, monthlyData[0]);
 
     // H1 vs H2
     const h1 = data.filter(s => s.captured_at < '2025-07-01');
