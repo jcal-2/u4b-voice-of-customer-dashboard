@@ -227,102 +227,180 @@ export default function VocSynthesis() {
           />
         </div>
 
-        {/* Sentiment + Key Drivers */}
+        {/* ROW 1 — Sentiment Donut + Key Drivers (60/40) */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-          <div className="lg:col-span-3 card-uber p-6">
+          {/* Sentiment Distribution — Donut */}
+          <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
             <h3 className="font-display text-base font-bold text-uber-black mb-4">Sentiment Distribution</h3>
+            <div className="flex items-center gap-6 flex-wrap">
+              <div className="relative" style={{ width: 200, height: 200 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={stats.sentimentData}
+                      dataKey="count"
+                      innerRadius={65}
+                      outerRadius={95}
+                      startAngle={90}
+                      endAngle={-270}
+                      paddingAngle={2}
+                      animationDuration={600}
+                      animationEasing="ease-out"
+                    >
+                      {stats.sentimentData.map((entry) => (
+                        <Cell key={entry.name} fill={SENTIMENT_COLORS[entry.name] || '#AAA'} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={({ active, payload }) => {
+                      if (!active || !payload?.[0]) return null;
+                      const d = payload[0].payload;
+                      return (
+                        <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2" style={{ fontFamily: 'DM Sans', fontSize: 12, color: '#333' }}>
+                          <strong>{d.name}</strong>: {d.count} ({d.pct}%)
+                        </div>
+                      );
+                    }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                {/* Center text */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="font-display text-[24px] font-extrabold text-uber-black">{stats.total.toLocaleString()}</span>
+                  <span className="font-body text-[11px] text-uber-ink-3">signals</span>
+                </div>
+              </div>
+              {/* Legend */}
+              <div className="space-y-2.5 flex-1">
+                {stats.sentimentData.map(d => (
+                  <div key={d.name} className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-[2px] flex-shrink-0" style={{ backgroundColor: SENTIMENT_COLORS[d.name] }} />
+                    <span className="font-body text-[13px] text-uber-ink-2 flex-1">{d.name}</span>
+                    <span className="font-mono text-[13px] text-uber-black font-semibold">{d.count}</span>
+                    <span className="font-mono text-[13px]" style={{ color: SENTIMENT_COLORS[d.name] }}>{d.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Stat pills */}
+            <div className="flex items-center justify-center gap-3 mt-4">
+              <span className="rounded-full px-3 py-1 font-mono text-[11px]" style={{ backgroundColor: '#E8F9F0', color: '#028A47' }}>
+                Net Sentiment {stats.netSentiment > 0 ? '+' : ''}{stats.netSentiment}pp
+              </span>
+              <span className="rounded-full px-3 py-1 font-mono text-[11px]" style={{ backgroundColor: '#FEECEE', color: '#E63946' }}>
+                {stats.frictionPct}% friction signals
+              </span>
+            </div>
+          </div>
+
+          {/* Key Drivers — Lollipop style */}
+          <div className="lg:col-span-2 bg-white border border-[#EBEBEB] rounded-2xl p-5">
+            <h3 className="font-display text-base font-bold text-uber-black">Key Drivers Cited</h3>
+            <p className="font-mono text-[10px] text-uber-ink-3 mb-4">NPS + CSAT responses only</p>
+            <div className="space-y-2">
+              {(() => {
+                const sorted = sortedEntries(stats.keyDrivers);
+                const maxCount = sorted[0]?.[1] || 1;
+                return sorted.slice(0, 8).map(([driver, count], i) => (
+                  <div key={driver} className="flex items-center gap-2 group hover:bg-[#F6F6F6] rounded-lg px-1 py-0.5 transition-colors">
+                    <span className="font-mono text-[11px] text-uber-ink-3 w-4 text-right">{i + 1}</span>
+                    <span className="font-body text-[12px] text-uber-ink-2 flex-1 truncate">{driver}</span>
+                    <div className="w-20 flex items-center">
+                      <div className="h-px bg-[#EBEBEB] flex-1" />
+                      <div
+                        className="rounded-full bg-[#2D6A9F] flex-shrink-0 transition-transform group-hover:scale-125"
+                        style={{ width: 8 + Math.round(12 * (count / maxCount)), height: 8 + Math.round(12 * (count / maxCount)) }}
+                      />
+                    </div>
+                    <span className="font-mono text-[12px] text-uber-black font-bold w-8 text-right">{count}</span>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+
+        {/* ROW 2 — Source Health + Signal Velocity + Action Urgency (40/30/30) */}
+        <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
+          {/* Source Health Overview */}
+          <div className="lg:col-span-4 bg-white border border-[#EBEBEB] rounded-2xl p-5">
+            <h3 className="font-display text-base font-bold text-uber-black">Source Health Overview</h3>
+            <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Volume · Negative rate · per source</p>
+            {(() => {
+              const structured = stats.sourceHealth.filter(s => s.structured);
+              const unstructured = stats.sourceHealth.filter(s => !s.structured);
+              const renderRow = (s: typeof stats.sourceHealth[0]) => (
+                <div key={s.name} className="flex items-center gap-2 py-1.5">
+                  <span className="font-body text-[12px] text-uber-black flex-1 truncate">{s.name}</span>
+                  <span className="font-mono text-[10px] bg-[#F6F6F6] text-uber-ink-2 rounded-full px-2 py-0.5">{s.total}</span>
+                  <div className="w-20 h-1.5 rounded-full overflow-hidden flex bg-[#F6F6F6]">
+                    <div className="h-full" style={{ width: `${s.posPct}%`, backgroundColor: '#06C167' }} />
+                    <div className="h-full" style={{ width: `${s.negPct}%`, backgroundColor: '#E63946' }} />
+                  </div>
+                  <span className="font-mono text-[10px] w-8 text-right" style={{ color: s.negPct > 50 ? '#E63946' : s.negPct >= 30 ? '#F4A261' : '#028A47' }}>
+                    {s.negPct}%
+                  </span>
+                </div>
+              );
+              return (
+                <div>
+                  <div className="font-mono text-[9px] text-uber-ink-3 uppercase tracking-[0.08em] mb-1">Structured</div>
+                  {structured.map(renderRow)}
+                  <div className="h-px bg-[#EBEBEB] my-2" />
+                  <div className="font-mono text-[9px] text-uber-ink-3 uppercase tracking-[0.08em] mb-1">Unstructured</div>
+                  {unstructured.map(renderRow)}
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Signal Velocity */}
+          <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
+            <h3 className="font-display text-base font-bold text-uber-black">Signal Velocity</h3>
+            <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Monthly signal volume trend</p>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={stats.sentimentData} layout="vertical" margin={{ left: 10, right: 40 }}>
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" width={70} tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#333' }} />
+              <AreaChart data={stats.monthlyData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
+                <defs>
+                  <linearGradient id="areaGreen" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#06C167" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#06C167" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis
+                  dataKey="month"
+                  tick={{ fontFamily: 'DM Mono', fontSize: 9, fill: '#AAAAAA' }}
+                  axisLine={false}
+                  tickLine={false}
+                  interval={2}
+                />
                 <Tooltip content={({ active, payload }) => {
                   if (!active || !payload?.[0]) return null;
                   const d = payload[0].payload;
                   return (
-                    <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2 shadow-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#333' }}>
-                      <strong>{d.name}</strong>: {d.count} ({d.pct}%)
+                    <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2" style={{ fontFamily: 'DM Sans', fontSize: 12, color: '#333' }}>
+                      {d.month}: {d.count} signals
                     </div>
                   );
                 }} />
-                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
-                  {stats.sentimentData.map((entry) => (
-                    <Cell key={entry.name} fill={SENTIMENT_COLORS[entry.name] || '#AAA'} />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Area
+                  type="monotone"
+                  dataKey="count"
+                  stroke="#06C167"
+                  strokeWidth={2}
+                  fill="url(#areaGreen)"
+                  animationDuration={600}
+                  animationEasing="ease-out"
+                />
+              </AreaChart>
             </ResponsiveContainer>
-            <p className="font-body text-xs text-uber-ink-3 mt-2">
-              Net Sentiment: {stats.netSentiment > 0 ? '+' : ''}{stats.netSentiment}pp · Combined friction signals: {stats.frictionCount} ({stats.frictionPct}%)
-            </p>
+            {stats.peakMonth && (
+              <p className="font-mono text-[10px] text-uber-ink-3 mt-2">
+                Peak month: {stats.peakMonth.month} · {stats.peakMonth.count} signals
+              </p>
+            )}
           </div>
-          <div className="lg:col-span-2 card-uber p-6">
-            <h3 className="font-display text-base font-bold text-uber-black mb-4">Top Key Drivers</h3>
-            <div className="space-y-2">
-              {sortedEntries(stats.keyDrivers).slice(0, 8).map(([driver, count], i) => {
-                const totalDrivers = sortedEntries(stats.keyDrivers).reduce((s, [, c]) => s + c, 0);
-                const pct = Math.round(100 * count / totalDrivers);
-                return (
-                  <div key={driver} className="flex items-center gap-2 group relative">
-                    <span className="font-mono text-xs text-uber-ink-4 w-5">{i + 1}</span>
-                    <span className="font-body text-xs text-uber-ink-2 flex-1 truncate">{driver}</span>
-                    <div className="w-16 h-2 bg-uber-gray-border rounded-full overflow-hidden">
-                      <div className="h-full bg-uber-blue rounded-full" style={{ width: `${Math.round(100 * count / sortedEntries(stats.keyDrivers)[0][1])}%` }} />
-                    </div>
-                    <span className="font-mono text-xs text-uber-black w-8 text-right">{count}</span>
-                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white border border-[#EBEBEB] rounded-lg px-2 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#333' }}>
-                      {driver}: {pct}% of total
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
 
-        {/* Volume, Neg Rate, Action Tags */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="card-uber p-6">
-            <h3 className="font-display text-base font-bold text-uber-black mb-4">Volume by Source</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={sortedEntries(stats.sourceCounts).map(([n, c]) => ({ name: n, count: c }))} layout="vertical" margin={{ left: 10, right: 20 }}>
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontFamily: 'DM Sans', fontSize: 10, fill: '#333' }} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#06C167" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="card-uber p-6">
-            <h3 className="font-display text-base font-bold text-uber-black mb-4">Negative Signal Rate</h3>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={stats.negRateBySource} layout="vertical" margin={{ left: 10, right: 20 }}>
-                <XAxis type="number" hide />
-                <YAxis type="category" dataKey="name" width={120} tick={{ fontFamily: 'DM Sans', fontSize: 10, fill: '#333' }} />
-                <Tooltip />
-                <Bar dataKey="rate" fill="#E63946" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="card-uber p-6">
-            <h3 className="font-display text-base font-bold text-uber-black mb-4">Action Items</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {[
-                { tag: 'Escalation', bg: '#FEECEE', color: '#E63946' },
-                { tag: 'Churn Risk', bg: '#FEF3E8', color: '#F4A261' },
-                { tag: 'Go-to-Gemba', bg: '#F3EEF9', color: '#7B4F9E' },
-                { tag: 'Expansion Opportunity', bg: '#E8F9F0', color: '#06C167' },
-                { tag: 'Product Feature', bg: '#EBF3FB', color: '#2D6A9F' },
-                { tag: 'ICP Research', bg: '#E6F5F4', color: '#2A9D8F' },
-              ].map(({ tag, bg, color }) => (
-                <div key={tag} className="rounded-xl p-3 text-center" style={{ backgroundColor: bg }}>
-                  <div className="font-display text-2xl font-bold" style={{ color }}>{stats.actionCounts[tag] || 0}</div>
-                  <div className="font-body text-[11px] text-uber-ink-3 mt-1">{tag}</div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Action Urgency Panel */}
+          <ActionUrgencyPanel actionCounts={stats.actionCounts} />
         </div>
-
         {/* Trend Comparison */}
         <div className="bg-uber-black rounded-t-[16px] p-6 text-white">
           <h3 className="font-display text-lg font-bold mb-1">H1 vs H2 Trend Comparison</h3>
