@@ -125,7 +125,7 @@ export default function VocSynthesis() {
       return { stage, vol, negPct, topPain, risk, posCount, neuCount, negCount, mixCount };
     });
 
-    return { nps, csat, ces, ors, sentimentData, netSentiment, frictionCount, frictionPct: Math.round(100 * frictionCount / total), keyDrivers, sourceCounts, negRateBySource, actionCounts, themes, h1Nps, h2Nps, h1Csat, h2Csat, h1Neg, h2Neg, h1Pos, h2Pos, h1Vol: h1.length, h2Vol: h2.length, cdjData, total, themeTrends };
+    return { nps, csat, ces, ors, sentimentData, netSentiment, frictionCount, frictionPct: Math.round(100 * frictionCount / total), keyDrivers, sourceCounts, negRateBySource, actionCounts, themes, h1Nps, h2Nps, h1Csat, h2Csat, h1Neg, h2Neg, h1Pos, h2Pos, h1Vol: h1.length, h2Vol: h2.length, cdjData, total, themeTrends, sourceHealth, monthlyData, peakMonth };
   }, [data]);
 
   if (loading || error) return <LoadingScreen />;
