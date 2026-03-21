@@ -15,6 +15,7 @@ const DISPLAY_SOURCES = [
 
 export default function MasterFeedback() {
   const { data, loading, error } = useVocData();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedStage, setSelectedStage] = useState('All Stages');
   const [selectedSources, setSelectedSources] = useState<string[]>(['All Sources']);
   const [search, setSearch] = useState('');
@@ -22,6 +23,19 @@ export default function MasterFeedback() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
   const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
+  const [activeTheme, setActiveTheme] = useState<string | null>(null);
+
+  // Read URL params on mount
+  useEffect(() => {
+    const stageParam = searchParams.get('stage');
+    const themeParam = searchParams.get('theme');
+    if (stageParam) setSelectedStage(stageParam);
+    if (themeParam) setActiveTheme(themeParam);
+    // Clear params after applying
+    if (stageParam || themeParam) {
+      setSearchParams({}, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const filtered = useMemo(() => {
     let result = data;
