@@ -53,6 +53,9 @@ export default function MasterFeedback() {
     if (activeActionTag) {
       result = result.filter(s => s.action_tag === activeActionTag);
     }
+    if (activeTheme) {
+      result = result.filter(s => Array.isArray(s.sentiment_themes) && s.sentiment_themes.includes(activeTheme));
+    }
     const parseDate = (d: string) => {
       const parts = d.split('/');
       return new Date(+parts[2], +parts[0] - 1, +parts[1]).getTime();
