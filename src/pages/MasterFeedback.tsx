@@ -66,7 +66,7 @@ export default function MasterFeedback() {
       return dateSort === 'desc' ? db - da : da - db;
     });
     return result;
-  }, [data, selectedStage, selectedSources, search, activeActionTag, dateSort]);
+  }, [data, selectedStage, selectedSources, search, activeActionTag, activeTheme, dateSort]);
 
   const toggleSource = (src: string) => {
     if (src === 'All Sources') {
