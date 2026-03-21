@@ -19,6 +19,7 @@ export default function MasterFeedback() {
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(25);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let result = data;
@@ -33,8 +34,11 @@ export default function MasterFeedback() {
       const q = search.toLowerCase();
       result = result.filter(s => s.verbatim_text.toLowerCase().includes(q));
     }
+    if (activeActionTag) {
+      result = result.filter(s => s.action_tag === activeActionTag);
+    }
     return result;
-  }, [data, selectedStage, selectedSources, search]);
+  }, [data, selectedStage, selectedSources, search, activeActionTag]);
 
   const toggleSource = (src: string) => {
     if (src === 'All Sources') {
@@ -152,7 +156,7 @@ export default function MasterFeedback() {
 
           {/* Right: Insights Panel */}
           <div className="lg:col-span-2 lg:sticky lg:top-20 lg:self-start space-y-6">
-            <InsightsPanel data={filtered} stageLabel={selectedStage} sourceLabel={selectedSources.join(', ')} onSelectSignal={(id) => setExpandedId(id)} />
+            <InsightsPanel data={filtered} stageLabel={selectedStage} sourceLabel={selectedSources.join(', ')} onSelectSignal={(id) => setExpandedId(id)} activeActionTag={activeActionTag} onActionTagClick={(tag) => setActiveActionTag(activeActionTag === tag ? null : tag)} />
           </div>
         </div>
       </div>
@@ -261,7 +265,7 @@ function ScoreBadge({ type, value }: { type: string; value: string | number }) {
   );
 }
 
-function InsightsPanel({ data, stageLabel, sourceLabel, onSelectSignal }: { data: VocSignal[]; stageLabel: string; sourceLabel: string; onSelectSignal: (id: string) => void }) {
+function InsightsPanel({ data, stageLabel, sourceLabel, onSelectSignal, activeActionTag, onActionTagClick }: { data: VocSignal[]; stageLabel: string; sourceLabel: string; onSelectSignal: (id: string) => void; activeActionTag: string | null; onActionTagClick: (tag: string) => void }) {
   const themes = useMemo(() => sortedEntries(countPipeField(data, 'sentiment_themes')), [data]);
   const actionCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -301,7 +305,7 @@ function InsightsPanel({ data, stageLabel, sourceLabel, onSelectSignal }: { data
 
       <div>
         <h3 className="font-display text-base font-bold text-uber-black">Action Items</h3>
-        <p className="font-body text-[11px] text-uber-ink-3">Filtered signals requiring follow-up</p>
+        <p className="font-body text-[11px] text-uber-ink-3">Filtered signals requiring follow-up · click to filter</p>
         <div className="grid grid-cols-2 gap-2 mt-3">
           {[
             { tag: 'Escalation', color: '#E63946' },
@@ -310,12 +314,20 @@ function InsightsPanel({ data, stageLabel, sourceLabel, onSelectSignal }: { data
             { tag: 'Expansion Opportunity', color: '#06C167' },
             { tag: 'Product Feature', color: '#2D6A9F' },
             { tag: 'ICP Research', color: '#2A9D8F' },
-          ].map(({ tag, color }) => (
-            <div key={tag} className="bg-white rounded-xl border border-uber-gray-border p-2.5 text-center">
-              <div className="font-display text-xl font-bold" style={{ color }}>{actionCounts[tag] || 0}</div>
-              <div className="font-body text-[11px] text-uber-ink-3">{tag}</div>
-            </div>
-          ))}
+          ].map(({ tag, color }) => {
+            const isActive = activeActionTag === tag;
+            return (
+              <div
+                key={tag}
+                className={`rounded-xl border p-2.5 text-center cursor-pointer transition-all duration-150 active:scale-[0.97] ${isActive ? 'ring-2 shadow-sm' : 'bg-white border-uber-gray-border hover:border-current'}`}
+                style={isActive ? { borderColor: color, ['--tw-ring-color' as string]: color, backgroundColor: `${color}10` } : undefined}
+                onClick={() => onActionTagClick(tag)}
+              >
+                <div className="font-display text-xl font-bold" style={{ color }}>{actionCounts[tag] || 0}</div>
+                <div className="font-body text-[11px] text-uber-ink-3">{tag}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
