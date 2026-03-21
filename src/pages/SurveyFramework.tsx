@@ -114,13 +114,13 @@ function OptionList({ options }: { options: { text: string; core: boolean }[] })
       {options.map((o, i) => (
         <li
           key={i}
-          style={{ listStyle: 'none', padding: '2px 0', margin: 0 }}
-          className={`text-[11px] leading-[1.4] ${o.core ? 'font-medium text-uber-black' : 'text-uber-ink-3'}`}
+          style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', alignItems: 'flex-start', gap: 6 }}
+          className={`text-[11px] leading-[1.4] py-[2px] ${o.core ? 'font-medium text-uber-black' : 'text-uber-ink-3'}`}
         >
-          <span className={`inline-block mr-1.5 ${o.core ? 'text-[#2D6A9F] text-[10px]' : 'text-uber-ink-3 text-[9px]'}`}>
+          <span style={{ flexShrink: 0, marginTop: o.core ? 1 : 2, fontSize: o.core ? 10 : 9, color: o.core ? '#2D6A9F' : '#AAAAAA' }}>
             {o.core ? '★' : '□'}
           </span>
-          {o.text}
+          <span>{o.text}</span>
         </li>
       ))}
     </ul>
@@ -131,7 +131,7 @@ function SurveyCard({ survey }: { survey: SurveyDef }) {
   const mc = METRIC_COLORS[survey.metric];
   return (
     <div
-      className={`bg-white rounded-2xl relative overflow-hidden transition-all duration-200 hover:border-[#D0D0D0] hover:scale-[1.005] active:scale-[0.98] ${
+      className={`survey-card bg-white rounded-2xl relative overflow-hidden transition-all duration-200 hover:border-[#D0D0D0] hover:scale-[1.005] active:scale-[0.98] ${
         survey.updated ? 'border-[1.5px] border-[#06C167]' : 'border border-[#EBEBEB]'
       }`}
     >

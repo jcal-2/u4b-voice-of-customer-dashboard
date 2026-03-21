@@ -71,6 +71,15 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Syne', sans-serif;
   }
+  /* Survey card list reset */
+  .survey-card ul,
+  .survey-card ol,
+  .survey-card li {
+    list-style: none !important;
+    list-style-type: none !important;
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+  }
 }
 
 @layer utilities {
