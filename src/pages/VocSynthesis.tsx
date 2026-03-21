@@ -50,8 +50,8 @@ export default function VocSynthesis() {
     const h2Nps = calcNps(h2);
     const h1Csat = calcCsat(h1);
     const h2Csat = calcCsat(h2);
-    const h1Neg = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Negative').length / h1.length) : 0;
-    const h2Neg = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Negative').length / h2.length) : 0;
+    const h1Neg = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h1.length) : 0;
+    const h2Neg = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h2.length) : 0;
     const h1Pos = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Positive').length / h1.length) : 0;
     const h2Pos = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Positive').length / h2.length) : 0;
 
@@ -220,21 +220,31 @@ export default function VocSynthesis() {
           <p className="font-mono text-[11px] text-uber-ink-3 mb-5">Split at Jul 1 2025 · H1: {stats.h1Vol} signals · H2: {stats.h2Vol} signals</p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
-              <table className="w-full text-sm">
+              <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-700">
-                    <th className="text-left font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">Metric</th>
-                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">H1</th>
-                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">H2</th>
-                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">Delta</th>
+                  <tr className="border-b border-[#333]">
+                    <th className="text-left font-mono text-[10px] text-uber-ink-3 uppercase tracking-wider pb-2">Metric</th>
+                    <th className="text-right font-mono text-[10px] text-uber-ink-3 uppercase tracking-wider pb-2">H1</th>
+                    <th className="text-right font-mono text-[10px] text-uber-ink-3 uppercase tracking-wider pb-2">H2</th>
+                    <th className="text-right font-mono text-[10px] text-uber-ink-3 uppercase tracking-wider pb-2">Delta</th>
                   </tr>
                 </thead>
-                <tbody className="font-mono text-[13px]">
-                  <TrendRow label="NPS" h1={stats.h1Nps.score} h2={stats.h2Nps.score} format="int" />
-                  <TrendRow label="CSAT Avg" h1={stats.h1Csat.avg} h2={stats.h2Csat.avg} format="avg" />
-                  <TrendRow label="Neg %" h1={stats.h1Neg} h2={stats.h2Neg} format="pct" invert />
-                  <TrendRow label="Pos %" h1={stats.h1Pos} h2={stats.h2Pos} format="pct" />
-                  <TrendRow label="Volume" h1={stats.h1Vol} h2={stats.h2Vol} format="int" />
+                <tbody>
+                  {/* NPS */}
+                  <TrendRow label="NPS" h1={stats.h1Nps.score} h2={stats.h2Nps.score} format="int" main />
+                  <TrendRow label="↳ Promoters (9–10)" h1={stats.h1Nps.pPct} h2={stats.h2Nps.pPct} format="pct" sub />
+                  <TrendRow label="↳ Passives (7–8)" h1={stats.h1Nps.paPct} h2={stats.h2Nps.paPct} format="pct" sub />
+                  <TrendRow label="↳ Detractors (0–6)" h1={stats.h1Nps.dPct} h2={stats.h2Nps.dPct} format="pct" sub invert />
+                  {/* CSAT */}
+                  <TrendRow label="CSAT Avg" h1={stats.h1Csat.avg} h2={stats.h2Csat.avg} format="avg" main />
+                  <TrendRow label="CSAT Score (NPS-style)" h1={stats.h1Csat.score} h2={stats.h2Csat.score} format="int" main />
+                  <TrendRow label="↳ Promoters (9–10)" h1={stats.h1Csat.pPct} h2={stats.h2Csat.pPct} format="pct" sub />
+                  <TrendRow label="↳ Passives (7–8)" h1={stats.h1Csat.paPct} h2={stats.h2Csat.paPct} format="pct" sub />
+                  <TrendRow label="↳ Detractors (0–6)" h1={stats.h1Csat.dPct} h2={stats.h2Csat.dPct} format="pct" sub invert />
+                  {/* Sentiment & Volume */}
+                  <TrendRow label="Neg % (Neg + Mixed)" h1={stats.h1Neg} h2={stats.h2Neg} format="pct" main invert />
+                  <TrendRow label="Pos %" h1={stats.h1Pos} h2={stats.h2Pos} format="pct" main />
+                  <TrendRow label="Volume" h1={stats.h1Vol} h2={stats.h2Vol} format="int" main />
                 </tbody>
               </table>
             </div>
@@ -251,7 +261,7 @@ export default function VocSynthesis() {
               </span></p>
               <p><span className="text-uber-blue font-semibold">What's new in H2: </span><span className="text-gray-400">
                 {stats.h2Vol > stats.h1Vol ? `Signal volume grew by ${stats.h2Vol - stats.h1Vol} records. ` : ''}
-                Expansion opportunity signals increased, suggesting mature accounts are finding more use cases. New CES surveys captured fresh onboarding friction data.
+                Expansion opportunity signals increased, suggesting mature accounts are finding more use cases.
               </span></p>
             </div>
           </div>
@@ -364,7 +374,7 @@ function ScorecardOrs({ ors }: { ors: ReturnType<typeof calcOrs> }) {
   );
 }
 
-function TrendRow({ label, h1, h2, format, invert = false }: { label: string; h1: number; h2: number; format: 'int' | 'avg' | 'pct'; invert?: boolean }) {
+function TrendRow({ label, h1, h2, format, invert = false, main = false, sub = false }: { label: string; h1: number; h2: number; format: 'int' | 'avg' | 'pct'; invert?: boolean; main?: boolean; sub?: boolean }) {
   const delta = h2 - h1;
   const improving = invert ? delta < 0 : delta > 0;
 
@@ -380,12 +390,14 @@ function TrendRow({ label, h1, h2, format, invert = false }: { label: string; h1
     return sign + Math.round(d);
   };
 
+  const deltaColor = Math.round(delta * 100) === 0 ? '#717171' : improving ? '#06C167' : '#E63946';
+
   return (
-    <tr className="border-b border-gray-700">
-      <td className="py-2.5 text-gray-300">{label}</td>
-      <td className="text-right py-2.5 text-gray-100">{fmt(h1)}</td>
-      <td className="text-right py-2.5 text-gray-100">{fmt(h2)}</td>
-      <td className="text-right py-2.5 font-semibold" style={{ color: delta === 0 ? '#AAA' : improving ? '#06C167' : '#E63946' }}>
+    <tr className={main ? 'border-t border-[#333]' : ''}>
+      <td className={`py-2 ${sub ? 'pl-4 font-mono text-[11px] text-uber-ink-3' : 'font-body text-xs text-white'}`}>{label}</td>
+      <td className={`text-right py-2 font-mono ${sub ? 'text-[11px] text-uber-ink-3' : 'text-xs text-gray-100'}`}>{fmt(h1)}</td>
+      <td className={`text-right py-2 font-mono ${sub ? 'text-[11px] text-uber-ink-3' : 'text-xs text-gray-100'}`}>{fmt(h2)}</td>
+      <td className="text-right py-2 font-mono text-xs font-semibold" style={{ color: deltaColor }}>
         {fmtDelta(delta)}
       </td>
     </tr>
