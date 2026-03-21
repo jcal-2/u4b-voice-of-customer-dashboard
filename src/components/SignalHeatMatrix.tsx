@@ -62,7 +62,7 @@ function getHeatCellStyle(count: number, isPositive: boolean) {
   return { bg: '#E63946', text: '#FFFFFF' };
 }
 
-export default function SignalHeatMatrix({ data }: { data: VocSignal[] }) {
+export default function SignalHeatMatrix({ data, dimFilter }: { data: VocSignal[]; dimFilter?: string }) {
   const navigate = useNavigate();
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
 

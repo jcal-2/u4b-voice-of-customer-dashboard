@@ -8,6 +8,7 @@ import MasterFeedback from "@/pages/MasterFeedback";
 import SurveyFramework from "@/pages/SurveyFramework";
 import CustomerArchetypes from "@/pages/CustomerArchetypes";
 import RawData from "@/pages/RawData";
+import ActionItems from "@/pages/ActionItems";
 import NotFound from "./pages/NotFound.tsx";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<VocSynthesis />} />
             <Route path="/feedback" element={<MasterFeedback />} />
+            <Route path="/actions" element={<ActionItems />} />
             <Route path="/surveys" element={<SurveyFramework />} />
             <Route path="/archetypes" element={<CustomerArchetypes />} />
             <Route path="/data" element={<RawData />} />
