@@ -13,6 +13,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        display: ["Syne", "sans-serif"],
+        body: ["DM Sans", "sans-serif"],
+        mono: ["DM Mono", "monospace"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,28 +62,46 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        uber: {
+          black: "#000000",
+          green: "#06C167",
+          "green-dark": "#028A47",
+          "green-light": "#E8F9F0",
+          red: "#E63946",
+          "red-light": "#FEECEE",
+          amber: "#F4A261",
+          "amber-light": "#FEF3E8",
+          blue: "#2D6A9F",
+          "blue-light": "#EBF3FB",
+          purple: "#7B4F9E",
+          "purple-light": "#F3EEF9",
+          teal: "#2A9D8F",
+          "teal-light": "#E6F5F4",
+          gray: {
+            card: "#F6F6F6",
+            border: "#EBEBEB",
+          },
+          ink: "#000000",
+          "ink-2": "#333333",
+          "ink-3": "#717171",
+          "ink-4": "#AAAAAA",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        uber: "16px",
+        pill: "20px",
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {
