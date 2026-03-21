@@ -194,11 +194,15 @@ export default function SignalHeatMatrix({ data, dimFilter }: { data: VocSignal[
             {rows.map(row => {
               const ps = priorityStyles[row.priority];
               const trendColor = getTrendColor(row);
+              const isDimmed = dimFilter && TEAM_THEMES[dimFilter] ? !TEAM_THEMES[dimFilter].includes(row.theme) : false;
               return (
                 <tr
                   key={row.theme}
-                  className="group transition-colors duration-150 hover:bg-[#FAFAFA]"
-                  style={{ borderLeft: row.priority !== 'STABLE' ? `3px solid ${ps.border}` : '3px solid transparent' }}
+                  className="group transition-all duration-150 hover:bg-[#FAFAFA]"
+                  style={{
+                    borderLeft: row.priority !== 'STABLE' ? `3px solid ${ps.border}` : '3px solid transparent',
+                    opacity: isDimmed ? 0.4 : 1,
+                  }}
                 >
                   {/* Priority badge */}
                   <td className="py-2 px-2">
