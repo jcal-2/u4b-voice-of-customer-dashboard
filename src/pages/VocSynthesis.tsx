@@ -45,6 +45,18 @@ export default function VocSynthesis() {
     const actionCounts = countByField(data, 'action_tag');
     const themes = countPipeField(data, 'sentiment_themes');
 
+    // H1 vs H2
+    const h1 = data.filter(s => s.captured_at < '2025-07-01');
+    const h2 = data.filter(s => s.captured_at >= '2025-07-01');
+    const h1Nps = calcNps(h1);
+    const h2Nps = calcNps(h2);
+    const h1Csat = calcCsat(h1);
+    const h2Csat = calcCsat(h2);
+    const h1Neg = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h1.length) : 0;
+    const h2Neg = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h2.length) : 0;
+    const h1Pos = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Positive').length / h1.length) : 0;
+    const h2Pos = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Positive').length / h2.length) : 0;
+
     // Theme trend H1 vs H2
     const POSITIVE_THEMES = ['Cost Savings Win', 'Expansion Opportunity', 'Proactive Onboarding'];
     const h1Themes = countPipeField(h1, 'sentiment_themes');
@@ -70,18 +82,6 @@ export default function VocSynthesis() {
       }
       return { name, h1c, h2c, total, pctChange, trendLabel, trendBg, trendText };
     }).sort((a, b) => b.h2c - a.h2c);
-
-    // H1 vs H2
-    const h1 = data.filter(s => s.captured_at < '2025-07-01');
-    const h2 = data.filter(s => s.captured_at >= '2025-07-01');
-    const h1Nps = calcNps(h1);
-    const h2Nps = calcNps(h2);
-    const h1Csat = calcCsat(h1);
-    const h2Csat = calcCsat(h2);
-    const h1Neg = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h1.length) : 0;
-    const h2Neg = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Negative' || s.sentiment === 'Mixed').length / h2.length) : 0;
-    const h1Pos = h1.length ? Math.round(100 * h1.filter(s => s.sentiment === 'Positive').length / h1.length) : 0;
-    const h2Pos = h2.length ? Math.round(100 * h2.filter(s => s.sentiment === 'Positive').length / h2.length) : 0;
 
     // CDJ negativity
     const cdjStages = ["Consideration / Evaluation", "Purchase", "Onboarding", "Adoption / Product Use", "Value / Expansion", "Expansion / Renewal"];
