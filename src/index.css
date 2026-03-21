@@ -71,14 +71,26 @@
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Syne', sans-serif;
   }
-  /* Survey card list reset */
+  /* Nuclear list reset for survey cards */
+  .survey-card *,
   .survey-card ul,
   .survey-card ol,
-  .survey-card li {
+  .survey-card li,
+  [data-survey-card] *,
+  [data-survey-card] ul,
+  [data-survey-card] ol,
+  [data-survey-card] li {
     list-style: none !important;
     list-style-type: none !important;
+    list-style-image: none !important;
+    -webkit-padding-start: 0 !important;
+    padding-inline-start: 0 !important;
+  }
+  .prose ul,
+  .prose ol,
+  .prose li {
+    list-style: none !important;
     padding-left: 0 !important;
-    margin-left: 0 !important;
   }
 }
 
