@@ -4,7 +4,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
 import GaugeCard from '@/components/GaugeCard';
 
-import { PieChart, Pie, Cell, AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 export default function VocSynthesis() {
@@ -352,51 +352,8 @@ export default function VocSynthesis() {
             })()}
           </div>
 
-          {/* Signal Velocity */}
-          <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
-            <h3 className="font-display text-base font-bold text-uber-black">Signal Velocity</h3>
-            <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Monthly signal volume trend</p>
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={stats.monthlyData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-                <defs>
-                  <linearGradient id="areaGreen" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06C167" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#06C167" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontFamily: 'DM Mono', fontSize: 9, fill: '#AAAAAA' }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={2}
-                />
-                <Tooltip content={({ active, payload }) => {
-                  if (!active || !payload?.[0]) return null;
-                  const d = payload[0].payload;
-                  return (
-                    <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2" style={{ fontFamily: 'DM Sans', fontSize: 12, color: '#333' }}>
-                      {d.month}: {d.count} signals
-                    </div>
-                  );
-                }} />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#06C167"
-                  strokeWidth={2}
-                  fill="url(#areaGreen)"
-                  animationDuration={600}
-                  animationEasing="ease-out"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-            {stats.peakMonth && (
-              <p className="font-mono text-[10px] text-uber-ink-3 mt-2">
-                Peak month: {stats.peakMonth.month} · {stats.peakMonth.count} signals
-              </p>
-            )}
-          </div>
+          {/* Monthly KPI Trends */}
+          <MonthlyKpiTrends data={data} />
 
           {/* Action Urgency Panel */}
           <ActionUrgencyPanel actionCounts={stats.actionCounts} />
@@ -620,6 +577,159 @@ function ThemeTrendSection({ themeTrends }: { themeTrends: { name: string; h1c: 
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MonthlyKpiTrends({ data }: { data: import('@/types/voc').VocSignal[] }) {
+  const { months, metrics } = useMemo(() => {
+    const byMonth: Record<string, import('@/types/voc').VocSignal[]> = {};
+    data.forEach(s => {
+      const m = s.captured_at.slice(0, 7);
+      (byMonth[m] ||= []).push(s);
+    });
+    const sortedMonths = Object.keys(byMonth).sort();
+    const fmt = (ym: string) => {
+      const [y, m] = ym.split('-');
+      const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return `${names[parseInt(m) - 1]} '${y.slice(2)}`;
+    };
+
+    const npsData: { month: string; value: number | null }[] = [];
+    const csatData: { month: string; value: number | null }[] = [];
+    const cesData: { month: string; value: number | null }[] = [];
+    const orsData: { month: string; value: number | null }[] = [];
+    let npsTotal = 0, csatTotal = 0, cesTotal = 0, orsTotal = 0;
+
+    sortedMonths.forEach(ym => {
+      const sigs = byMonth[ym];
+      const label = fmt(ym);
+
+      // NPS
+      const npsSigs = sigs.filter(s => s.nps_score !== null);
+      npsTotal += npsSigs.length;
+      if (npsSigs.length >= 3) {
+        const p = npsSigs.filter(s => s.nps_score! >= 9).length;
+        const d = npsSigs.filter(s => s.nps_score! <= 6).length;
+        npsData.push({ month: label, value: Math.round(100 * (p / npsSigs.length - d / npsSigs.length)) });
+      } else { npsData.push({ month: label, value: null }); }
+
+      // CSAT
+      const csatSigs = sigs.filter(s => s.csat_score !== null);
+      csatTotal += csatSigs.length;
+      if (csatSigs.length >= 3) {
+        const avg = csatSigs.reduce((a, s) => a + s.csat_score!, 0) / csatSigs.length;
+        csatData.push({ month: label, value: Math.round(avg * 10) / 10 });
+      } else { csatData.push({ month: label, value: null }); }
+
+      // CES
+      const cesSigs = sigs.filter(s => s.ces_score !== null);
+      cesTotal += cesSigs.length;
+      if (cesSigs.length >= 3) {
+        const yes = cesSigs.filter(s => s.ces_score === 'Yes').length;
+        cesData.push({ month: label, value: Math.round(100 * yes / cesSigs.length) });
+      } else { cesData.push({ month: label, value: null }); }
+
+      // ORS
+      const orsSigs = sigs.filter(s => s.ors_score !== null);
+      orsTotal += orsSigs.length;
+      if (orsSigs.length >= 3) {
+        const yes = orsSigs.filter(s => s.ors_score === 'Yes').length;
+        orsData.push({ month: label, value: Math.round(100 * yes / orsSigs.length) });
+      } else { orsData.push({ month: label, value: null }); }
+    });
+
+    const last = (arr: { value: number | null }[]) => {
+      for (let i = arr.length - 1; i >= 0; i--) if (arr[i].value !== null) return arr[i].value;
+      return null;
+    };
+    const secondLast = (arr: { value: number | null }[]) => {
+      let found = 0;
+      for (let i = arr.length - 1; i >= 0; i--) {
+        if (arr[i].value !== null) { found++; if (found === 2) return arr[i].value; }
+      }
+      return null;
+    };
+
+    return {
+      months: sortedMonths.map(fmt),
+      metrics: [
+        { name: 'NPS Score', color: '#F4A261', data: npsData, current: last(npsData), prev: secondLast(npsData), total: npsTotal, target: 'TGT: +32', fmt: (v: number) => (v > 0 ? '+' : '') + v },
+        { name: 'CSAT Average', color: '#2D6A9F', data: csatData, current: last(csatData), prev: secondLast(csatData), total: csatTotal, target: 'TGT: 7.5', fmt: (v: number) => v.toFixed(1) },
+        { name: 'CES Yes%', color: '#7B4F9E', data: cesData, current: last(cesData), prev: secondLast(cesData), total: cesTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+        { name: 'ORS Yes%', color: '#2A9D8F', data: orsData, current: last(orsData), prev: secondLast(orsData), total: orsTotal, target: 'TGT: 70%', fmt: (v: number) => v + '%' },
+      ],
+    };
+  }, [data]);
+
+  return (
+    <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
+      <h3 className="font-display text-base font-bold text-uber-black">Monthly KPI Trends</h3>
+      <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Survey scores over time · Jul 2024 – Mar 2026</p>
+
+      <div className="divide-y divide-[#F6F6F6]">
+        {metrics.map(m => {
+          const delta = m.current !== null && m.prev !== null ? Math.round((m.current - m.prev) * 10) / 10 : null;
+          return (
+            <div key={m.name} className="flex items-center gap-2 py-2.5">
+              {/* Left */}
+              <div className="w-[100px] flex-shrink-0">
+                <div className="font-body text-[12px] font-semibold text-uber-black">{m.name}</div>
+                <div className="font-display text-[20px] font-bold" style={{ color: m.color }}>
+                  {m.current !== null ? m.fmt(m.current) : '—'}
+                </div>
+                {delta !== null && (
+                  <div className="font-mono text-[10px]" style={{ color: delta >= 0 ? '#06C167' : '#E63946' }}>
+                    {delta >= 0 ? '▲' : '▼'} {delta > 0 ? '+' : ''}{delta}
+                  </div>
+                )}
+              </div>
+
+              {/* Sparkline */}
+              <div className="flex-1 min-w-0">
+                <ResponsiveContainer width="100%" height={48}>
+                  <LineChart data={m.data} margin={{ top: 4, right: 8, bottom: 4, left: 4 }}>
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.[0] || payload[0].value === undefined) return null;
+                        const d = payload[0].payload;
+                        if (d.value === null) return null;
+                        return (
+                          <span className="font-mono text-[11px]" style={{ color: m.color }}>
+                            {d.month}: {m.fmt(d.value)}
+                          </span>
+                        );
+                      }}
+                      wrapperStyle={{ outline: 'none', background: 'transparent', border: 'none', boxShadow: 'none' }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="value"
+                      stroke={m.color}
+                      strokeWidth={2}
+                      dot={false}
+                      activeDot={{ r: 4, fill: m.color, stroke: m.color }}
+                      connectNulls={false}
+                      animationDuration={600}
+                      animationEasing="ease-out"
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Right */}
+              <div className="w-[60px] flex-shrink-0 text-right">
+                <div className="font-mono text-[10px] text-uber-ink-3">n={m.total}</div>
+                <div className="font-mono text-[9px] text-uber-ink-3">{m.target}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="font-mono text-[9px] text-uber-ink-3 italic mt-2">
+        Months with &lt; 3 responses excluded from trendline
+      </p>
     </div>
   );
 }
