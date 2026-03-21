@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useVocData } from '@/context/VocDataContext';
 import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
+import GaugeCard from '@/components/GaugeCard';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 export default function VocSynthesis() {
@@ -102,14 +103,79 @@ export default function VocSynthesis() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Scorecard Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {/* NPS */}
-          <ScorecardNps nps={stats.nps} />
-          {/* CSAT */}
-          <ScorecardCsat csat={stats.csat} />
-          {/* CES */}
-          <ScorecardCes ces={stats.ces} />
-          {/* ORS */}
-          <ScorecardOrs ors={stats.ors} />
+          <GaugeCard
+            value={stats.nps.score}
+            min={-100}
+            max={100}
+            displayValue={`${stats.nps.score > 0 ? '+' : ''}${stats.nps.score}`}
+            fillColor="#06C167"
+            accentColor="#06C167"
+            title="Net Promoter Score"
+            subtitle="Below average — industry avg +32"
+            target={{ value: 32, label: "Target +32" }}
+            breakdownRows={[
+              { label: 'Promoters (9–10)', dotColor: '#06C167', value: `${stats.nps.pPct}%`, count: stats.nps.promoters },
+              { label: 'Passives (7–8)', dotColor: '#AAAAAA', value: `${stats.nps.paPct}%`, count: stats.nps.passives },
+              { label: 'Detractors (0–6)', dotColor: '#E63946', value: `${stats.nps.dPct}%`, count: stats.nps.detractors },
+            ]}
+          />
+          <GaugeCard
+            value={stats.csat.avg}
+            min={0}
+            max={10}
+            displayValue={stats.csat.avg.toFixed(1)}
+            fillColor="#2D6A9F"
+            accentColor="#2D6A9F"
+            title="CSAT Average Score"
+            subtitle={`Out of 10 · ${stats.csat.total} responses`}
+            target={{ value: 7.5, label: "Target 7.5" }}
+            breakdownRows={[
+              { label: 'Promoters (9–10)', dotColor: '#2D6A9F', value: `${stats.csat.pPct}%`, count: stats.csat.promoters },
+              { label: 'Passives (7–8)', dotColor: '#AAAAAA', value: `${stats.csat.paPct}%`, count: stats.csat.passives },
+              { label: 'Detractors (0–6)', dotColor: '#E63946', value: `${stats.csat.dPct}%`, count: stats.csat.detractors },
+              { label: 'CSAT NPS-style:', dotColor: '#000000', value: `${stats.csat.score > 0 ? '+' : ''}${stats.csat.score}`, bold: true },
+            ]}
+          />
+          <GaugeCard
+            value={stats.ces.yesPct}
+            min={0}
+            max={100}
+            displayValue={`${stats.ces.yesPct}%`}
+            fillColor="#7B4F9E"
+            accentColor="#7B4F9E"
+            title="CES — Effort Score"
+            subtitle={`% saying 'Easy' · ${stats.ces.total} surveys`}
+            zones={[
+              { end: 40, color: '#E63946' },
+              { end: 60, color: '#F4A261' },
+              { end: 100, color: '#06C167' },
+            ]}
+            breakdownRows={[
+              { label: 'Yes ✓', dotColor: '#06C167', value: `${stats.ces.yesPct}%` },
+              { label: 'No ✗', dotColor: '#E63946', value: `${stats.ces.noPct}%` },
+              { label: 'Unsure ?', dotColor: '#AAAAAA', value: `${stats.ces.unsurePct}%` },
+            ]}
+          />
+          <GaugeCard
+            value={stats.ors.yesPct}
+            min={0}
+            max={100}
+            displayValue={`${stats.ors.yesPct}%`}
+            fillColor="#2A9D8F"
+            accentColor="#2A9D8F"
+            title="ORS — Reliability Score"
+            subtitle={`% saying 'Dependable' · ${stats.ors.total} surveys`}
+            zones={[
+              { end: 40, color: '#E63946' },
+              { end: 60, color: '#F4A261' },
+              { end: 100, color: '#06C167' },
+            ]}
+            breakdownRows={[
+              { label: 'Yes ✓', dotColor: '#2A9D8F', value: `${stats.ors.yesPct}%` },
+              { label: 'No ✗', dotColor: '#E63946', value: `${stats.ors.noPct}%` },
+              { label: 'Unsure ?', dotColor: '#AAAAAA', value: `${stats.ors.unsurePct}%` },
+            ]}
+          />
         </div>
 
         {/* Sentiment + Key Drivers */}
@@ -313,66 +379,6 @@ export default function VocSynthesis() {
   );
 }
 
-function ScorecardNps({ nps }: { nps: ReturnType<typeof calcNps> }) {
-  return (
-    <div className="card-uber p-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-uber-green" />
-      <div className="font-display text-5xl font-extrabold text-uber-amber mt-2">{nps.score > 0 ? '+' : ''}{nps.score}</div>
-      <div className="font-body text-xs text-uber-ink-3 mt-1">Net Promoter Score</div>
-      <div className="font-body text-[11px] text-uber-ink-4 mt-0.5">Below average — industry avg +32</div>
-      <div className="mt-3 space-y-1 font-mono text-[11px] text-uber-ink-2">
-        <div>Promoters (9–10): {nps.pPct}% · {nps.promoters} responses</div>
-        <div>Passives (7–8): {nps.paPct}% · {nps.passives} responses</div>
-        <div>Detractors (0–6): {nps.dPct}% · {nps.detractors} responses</div>
-      </div>
-    </div>
-  );
-}
-
-function ScorecardCsat({ csat }: { csat: ReturnType<typeof calcCsat> }) {
-  return (
-    <div className="card-uber p-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-uber-blue" />
-      <div className="font-display text-5xl font-extrabold text-uber-amber mt-2">{csat.avg.toFixed(2)}</div>
-      <div className="font-body text-xs text-uber-ink-3 mt-1">CSAT Average Score</div>
-      <div className="font-body text-[11px] text-uber-ink-4 mt-0.5">Out of 10 · {csat.total} responses</div>
-      <div className="mt-3 space-y-1 font-mono text-[11px] text-uber-ink-2">
-        <div>Promoters (9–10): {csat.pPct}% · {csat.promoters} responses</div>
-        <div>Passives (7–8): {csat.paPct}% · {csat.passives} responses</div>
-        <div>Detractors (0–6): {csat.dPct}% · {csat.detractors} responses</div>
-        <div className="font-semibold">CSAT Score (NPS-style): {csat.score > 0 ? '+' : ''}{csat.score}</div>
-      </div>
-    </div>
-  );
-}
-
-function ScorecardCes({ ces }: { ces: ReturnType<typeof calcCes> }) {
-  return (
-    <div className="card-uber p-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-uber-purple" />
-      <div className="font-display text-5xl font-extrabold text-uber-purple mt-2">{ces.yesPct}%</div>
-      <div className="font-body text-xs text-uber-ink-3 mt-1">CES — Said Easy</div>
-      <div className="font-body text-[11px] text-uber-ink-4 mt-0.5">Yes responses · {ces.total} surveys</div>
-      <div className="mt-3 font-mono text-[11px] text-uber-ink-2">
-        No: {ces.noPct}% · Unsure: {ces.unsurePct}%
-      </div>
-    </div>
-  );
-}
-
-function ScorecardOrs({ ors }: { ors: ReturnType<typeof calcOrs> }) {
-  return (
-    <div className="card-uber p-5 relative overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-[3px] bg-uber-teal" />
-      <div className="font-display text-5xl font-extrabold text-uber-teal mt-2">{ors.yesPct}%</div>
-      <div className="font-body text-xs text-uber-ink-3 mt-1">ORS — Said Dependable</div>
-      <div className="font-body text-[11px] text-uber-ink-4 mt-0.5">Yes responses · {ors.total} surveys</div>
-      <div className="mt-3 font-mono text-[11px] text-uber-ink-2">
-        No: {ors.noPct}% · Unsure: {ors.unsurePct}%
-      </div>
-    </div>
-  );
-}
 
 function TrendRow({ label, h1, h2, format, invert = false, main = false, sub = false }: { label: string; h1: number; h2: number; format: 'int' | 'avg' | 'pct'; invert?: boolean; main?: boolean; sub?: boolean }) {
   const delta = h2 - h1;
