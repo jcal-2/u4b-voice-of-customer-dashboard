@@ -210,16 +210,23 @@ export default function VocSynthesis() {
           <div className="lg:col-span-2 card-uber p-6">
             <h3 className="font-display text-base font-bold text-uber-black mb-4">Top Key Drivers</h3>
             <div className="space-y-2">
-              {sortedEntries(stats.keyDrivers).slice(0, 8).map(([driver, count], i) => (
-                <div key={driver} className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-uber-ink-4 w-5">{i + 1}</span>
-                  <span className="font-body text-xs text-uber-ink-2 flex-1 truncate">{driver}</span>
-                  <div className="w-16 h-2 bg-uber-gray-border rounded-full overflow-hidden">
-                    <div className="h-full bg-uber-blue rounded-full" style={{ width: `${Math.round(100 * count / sortedEntries(stats.keyDrivers)[0][1])}%` }} />
+              {sortedEntries(stats.keyDrivers).slice(0, 8).map(([driver, count], i) => {
+                const totalDrivers = sortedEntries(stats.keyDrivers).reduce((s, [, c]) => s + c, 0);
+                const pct = Math.round(100 * count / totalDrivers);
+                return (
+                  <div key={driver} className="flex items-center gap-2 group relative">
+                    <span className="font-mono text-xs text-uber-ink-4 w-5">{i + 1}</span>
+                    <span className="font-body text-xs text-uber-ink-2 flex-1 truncate">{driver}</span>
+                    <div className="w-16 h-2 bg-uber-gray-border rounded-full overflow-hidden">
+                      <div className="h-full bg-uber-blue rounded-full" style={{ width: `${Math.round(100 * count / sortedEntries(stats.keyDrivers)[0][1])}%` }} />
+                    </div>
+                    <span className="font-mono text-xs text-uber-black w-8 text-right">{count}</span>
+                    <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-white border border-[#EBEBEB] rounded-lg px-2 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#333' }}>
+                      {driver}: {pct}% of total
+                    </div>
                   </div>
-                  <span className="font-mono text-xs text-uber-black w-8 text-right">{count}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
