@@ -187,7 +187,15 @@ export default function VocSynthesis() {
               <BarChart data={stats.sentimentData} layout="vertical" margin={{ left: 10, right: 40 }}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" width={70} tick={{ fontFamily: 'DM Sans', fontSize: 12, fill: '#333' }} />
-                <Tooltip />
+                <Tooltip content={({ active, payload }) => {
+                  if (!active || !payload?.[0]) return null;
+                  const d = payload[0].payload;
+                  return (
+                    <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2 shadow-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#333' }}>
+                      <strong>{d.name}</strong>: {d.count} ({d.pct}%)
+                    </div>
+                  );
+                }} />
                 <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                   {stats.sentimentData.map((entry) => (
                     <Cell key={entry.name} fill={SENTIMENT_COLORS[entry.name] || '#AAA'} />
