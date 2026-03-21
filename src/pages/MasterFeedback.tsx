@@ -20,7 +20,7 @@ export default function MasterFeedback() {
   const [visibleCount, setVisibleCount] = useState(25);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
-  const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
+  const [dateSort, setDateSort] = useState<'desc' | 'asc'>('asc');
 
   const filtered = useMemo(() => {
     let result = data;
