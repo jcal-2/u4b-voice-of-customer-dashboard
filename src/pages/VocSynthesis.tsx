@@ -623,3 +623,56 @@ function ThemeTrendSection({ themeTrends }: { themeTrends: { name: string; h1c: 
     </div>
   );
 }
+
+function ActionUrgencyPanel({ actionCounts }: { actionCounts: Record<string, number> }) {
+  const navigate = useNavigate();
+  const escalations = actionCounts['Escalation'] || 0;
+  const churnRisk = actionCounts['Churn Risk'] || 0;
+  const secondary = [
+    { tag: 'Go-to-Gemba', color: '#7B4F9E', count: actionCounts['Go-to-Gemba'] || 0 },
+    { tag: 'Expansion Opp', color: '#06C167', count: actionCounts['Expansion Opportunity'] || 0 },
+    { tag: 'Product Feature', color: '#2D6A9F', count: actionCounts['Product Feature'] || 0 },
+    { tag: 'ICP Research', color: '#2A9D8F', count: actionCounts['ICP Research'] || 0 },
+  ];
+
+  return (
+    <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
+      <h3 className="font-display text-base font-bold text-uber-black">Action Required</h3>
+      <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Signals needing follow-up</p>
+
+      {/* Critical box */}
+      <div className="font-mono text-[9px] text-[#E63946] uppercase tracking-[0.1em] mb-1.5">⚠ Immediate Attention</div>
+      <div className="bg-[#FEECEE] rounded-[10px] p-3 flex items-center">
+        <div className="flex-1 text-center">
+          <div className="font-display text-[32px] font-extrabold" style={{ color: '#E63946' }}>{escalations}</div>
+          <div className="font-body text-[11px]" style={{ color: '#E63946' }}>Escalations</div>
+        </div>
+        <div className="w-px h-10 bg-[#E63946]/20" />
+        <div className="flex-1 text-center">
+          <div className="font-display text-[32px] font-extrabold" style={{ color: '#F4A261' }}>{churnRisk}</div>
+          <div className="font-body text-[11px]" style={{ color: '#F4A261' }}>Churn Risk</div>
+        </div>
+      </div>
+
+      <div className="h-px bg-[#EBEBEB] my-3" />
+
+      {/* Secondary 2×2 */}
+      <div className="grid grid-cols-2 gap-2">
+        {secondary.map(s => (
+          <div key={s.tag} className="bg-[#F6F6F6] rounded-[10px] p-3 text-center">
+            <div className="font-display text-[22px] font-bold" style={{ color: s.color }}>{s.count}</div>
+            <div className="font-body text-[10px] text-uber-ink-3">{s.tag}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* CTA */}
+      <button
+        onClick={() => navigate('/actions')}
+        className="mt-3 font-body text-[12px] text-[#06C167] hover:underline active:scale-95 transition-all"
+      >
+        View all action items →
+      </button>
+    </div>
+  );
+}
