@@ -62,7 +62,13 @@ function getHeatCellStyle(count: number, isPositive: boolean) {
   return { bg: '#E63946', text: '#FFFFFF' };
 }
 
-export default function SignalHeatMatrix({ data }: { data: VocSignal[] }) {
+const TEAM_THEMES: Record<string, string[]> = {
+  'Product': ['Dashboard Visibility', 'Adoption Barrier', 'Proactive Onboarding', 'Feature Request for Product Roadmap'],
+  'CS / Support': ['Invoicing & Support Friction', 'Adoption Barrier', 'Integration Friction', 'Poor Fit / Churn Signal', 'Relationship Quality'],
+  'Marketing': ['Cost Savings Win', 'Proactive Onboarding', 'Dashboard Visibility', 'Poor Fit / Churn Signal', 'Perceived Value for Price'],
+};
+
+export default function SignalHeatMatrix({ data, dimFilter }: { data: VocSignal[]; dimFilter?: string }) {
   const navigate = useNavigate();
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
 
@@ -188,11 +194,15 @@ export default function SignalHeatMatrix({ data }: { data: VocSignal[] }) {
             {rows.map(row => {
               const ps = priorityStyles[row.priority];
               const trendColor = getTrendColor(row);
+              const isDimmed = dimFilter && TEAM_THEMES[dimFilter] ? !TEAM_THEMES[dimFilter].includes(row.theme) : false;
               return (
                 <tr
                   key={row.theme}
-                  className="group transition-colors duration-150 hover:bg-[#FAFAFA]"
-                  style={{ borderLeft: row.priority !== 'STABLE' ? `3px solid ${ps.border}` : '3px solid transparent' }}
+                  className="group transition-all duration-150 hover:bg-[#FAFAFA]"
+                  style={{
+                    borderLeft: row.priority !== 'STABLE' ? `3px solid ${ps.border}` : '3px solid transparent',
+                    opacity: isDimmed ? 0.4 : 1,
+                  }}
                 >
                   {/* Priority badge */}
                   <td className="py-2 px-2">

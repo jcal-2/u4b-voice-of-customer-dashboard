@@ -3,6 +3,7 @@ import { NavLink, useLocation } from 'react-router-dom';
 const tabs = [
   { label: 'VoC Synthesis', path: '/' },
   { label: 'Master Feedback', path: '/feedback' },
+  { label: 'Action Items', path: '/actions' },
   { label: 'Survey Framework', path: '/surveys' },
   { label: 'Customer Archetypes', path: '/archetypes' },
   { label: 'Raw Data', path: '/data' },
