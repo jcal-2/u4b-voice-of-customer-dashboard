@@ -4,6 +4,7 @@ interface BreakdownRow {
   label: string;
   dotColor: string;
   value: string;
+  valueColor?: string;
   count?: number;
   bold?: boolean;
 }
@@ -55,13 +56,12 @@ export default function GaugeCard({
     requestAnimationFrame(tick);
   }, [pct]);
 
-  // SVG arc params
-  const w = 180;
-  const h = 100;
+  const w = 200;
+  const h = 110;
   const cx = w / 2;
   const cy = h;
-  const r = 72;
-  const strokeW = 10;
+  const r = 80;
+  const strokeW = 14;
 
   const arcPath = (startAngle: number, endAngle: number) => {
     const s = (startAngle * Math.PI) / 180;
@@ -77,7 +77,6 @@ export default function GaugeCard({
   const targetPct = target ? (target.value - min) / range : null;
   const targetAngle = targetPct !== null ? targetPct * 180 : null;
 
-  // Determine fill color from zones if provided
   const actualFillColor = zones
     ? (() => {
         const valPct = pct * 100;
@@ -88,19 +87,22 @@ export default function GaugeCard({
       })()
     : fillColor;
 
+  // Scale label positions: just below arc ends, outside
+  const scaleLabelY = h + 18;
+
   return (
     <div
       className="bg-white rounded-2xl border border-[#EBEBEB] p-5 relative overflow-hidden transition-all duration-200 hover:scale-[1.01] hover:border-[#D0D0D0]"
+      style={{ minHeight: 280 }}
     >
       {/* Top accent bar */}
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ backgroundColor: accentColor }} />
 
       {/* Gauge */}
-      <div className="flex justify-center mt-2 mb-1">
-        <svg width={w} height={h + 14} viewBox={`0 0 ${w} ${h + 14}`}>
+      <div className="flex justify-center mt-3 mb-2">
+        <svg width={w} height={h + 24} viewBox={`0 0 ${w} ${h + 24}`}>
           {/* Track */}
           {zones ? (
-            // Render zone-colored track segments
             zones.map((zone, i) => {
               const prevEnd = i === 0 ? 0 : zones[i - 1].end;
               const startA = (prevEnd / 100) * 180;
@@ -138,55 +140,39 @@ export default function GaugeCard({
             />
           )}
 
-          {/* Target tick */}
-          {targetAngle !== null && (
-            <>
-              {(() => {
-                const a = (Math.PI + (targetAngle * Math.PI) / 180);
-                const tx = cx + r * Math.cos(a);
-                const ty = cy + r * Math.sin(a);
-                const outerR = r + 8;
-                const tx2 = cx + outerR * Math.cos(a);
-                const ty2 = cy + outerR * Math.sin(a);
-                return (
-                  <g>
-                    <line x1={tx} y1={ty} x2={tx2} y2={ty2} stroke="#AAAAAA" strokeWidth={2} />
-                    <text
-                      x={tx2 + (targetAngle < 90 ? -4 : 4)}
-                      y={ty2 - 4}
-                      fill="#AAAAAA"
-                      fontSize={8}
-                      fontFamily="DM Mono, monospace"
-                      textAnchor={targetAngle < 90 ? 'end' : 'start'}
-                    >
-                      {target!.label}
-                    </text>
-                  </g>
-                );
-              })()}
-            </>
-          )}
+          {/* Target tick (no text label) */}
+          {targetAngle !== null && (() => {
+            const a = Math.PI + (targetAngle * Math.PI) / 180;
+            const tx = cx + r * Math.cos(a);
+            const ty = cy + r * Math.sin(a);
+            const outerR = r + 10;
+            const tx2 = cx + outerR * Math.cos(a);
+            const ty2 = cy + outerR * Math.sin(a);
+            return (
+              <line x1={tx} y1={ty} x2={tx2} y2={ty2} stroke="#AAAAAA" strokeWidth={2} />
+            );
+          })()}
 
-          {/* Value text */}
+          {/* Hero value */}
           <text
             x={cx}
-            y={cy - 16}
+            y={cy - 18}
             textAnchor="middle"
             dominantBaseline="middle"
             fill="#000000"
-            fontSize={42}
+            fontSize={56}
             fontFamily="Syne, sans-serif"
             fontWeight={800}
-            letterSpacing="-1"
+            letterSpacing="-0.04em"
           >
             {displayValue}
           </text>
 
-          {/* Scale labels */}
-          <text x={cx - r + 5} y={h + 12} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace">
+          {/* Scale labels — below arc ends */}
+          <text x={cx - r} y={scaleLabelY} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace" textAnchor="middle">
             {min === -100 ? '−100' : min}
           </text>
-          <text x={cx + r - 5} y={h + 12} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace" textAnchor="end">
+          <text x={cx + r} y={scaleLabelY} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace" textAnchor="middle">
             {min === -100 ? '+100' : max === 100 ? '100%' : String(max)}
           </text>
         </svg>
@@ -207,17 +193,28 @@ export default function GaugeCard({
           >
             <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: row.dotColor }} />
             <span
-              className={`flex-1 text-[11px] ${row.bold ? 'font-semibold text-[#000000] text-[12px]' : 'text-[#717171]'}`}
-              style={{ fontFamily: 'DM Mono, monospace' }}
+              className="flex-1"
+              style={{
+                fontFamily: 'DM Mono, monospace',
+                fontSize: row.bold ? 14 : 13,
+                fontWeight: row.bold ? 700 : 400,
+                color: row.bold ? (row.valueColor || '#000000') : '#717171',
+              }}
             >
               {row.label}
             </span>
             <span
-              className={`text-[11px] ${row.bold ? 'font-bold text-[#000000] text-[12px]' : 'text-[#717171]'}`}
-              style={{ fontFamily: 'DM Mono, monospace' }}
+              style={{
+                fontFamily: 'DM Mono, monospace',
+                fontSize: row.bold ? 14 : 13,
+                fontWeight: row.bold ? 700 : 400,
+                color: row.bold ? (row.valueColor || '#000000') : (row.valueColor || '#717171'),
+              }}
             >
               {row.value}
-              {row.count !== undefined ? ` · ${row.count}` : ''}
+              {row.count !== undefined && (
+                <span style={{ color: '#AAAAAA' }}> · {row.count}</span>
+              )}
             </span>
           </div>
         ))}
