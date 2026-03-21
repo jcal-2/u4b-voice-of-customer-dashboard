@@ -131,7 +131,7 @@ function SurveyCard({ survey }: { survey: SurveyDef }) {
   const mc = METRIC_COLORS[survey.metric];
   return (
     <div
-      className={`bg-white rounded-2xl relative overflow-hidden transition-all duration-200 hover:border-[#D0D0D0] hover:scale-[1.005] active:scale-[0.98] ${
+      className={`survey-card bg-white rounded-2xl relative overflow-hidden transition-all duration-200 hover:border-[#D0D0D0] hover:scale-[1.005] active:scale-[0.98] ${
         survey.updated ? 'border-[1.5px] border-[#06C167]' : 'border border-[#EBEBEB]'
       }`}
     >
