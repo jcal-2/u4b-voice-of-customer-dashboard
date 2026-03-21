@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function VocSynthesis() {
   const { data, loading, error } = useVocData();
+  const navigate = useNavigate();
 
   const stats = useMemo(() => {
     if (!data.length) return null;
@@ -225,6 +226,81 @@ export default function VocSynthesis() {
               { label: 'Unsure ?', dotColor: '#AAAAAA', valueColor: '#AAAAAA', value: `${stats.ors.unsurePct}%` },
             ]}
           />
+        </div>
+
+        {/* Most Recent Survey Responses */}
+        <div className="mt-3 mb-8">
+          <div className="flex items-center justify-between mb-3">
+            <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 13, fontWeight: 600, color: '#000' }}>Most Recent Survey Responses</span>
+            <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#AAAAAA' }}>Real-time from your data</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+            {(() => {
+              const parseDate = (d: string) => {
+                if (d.includes('/')) {
+                  const [m, day, y] = d.split('/');
+                  return new Date(+y, +m - 1, +day).getTime();
+                }
+                return new Date(d).getTime();
+              };
+              const configs = [
+                { type: 'NPS', filter: (s: typeof data[0]) => s.nps_score !== null, score: (s: typeof data[0]) => s.nps_score!, accentColor: '#F4A261', badgeBg: '#FEF3E8', badgeText: '#F4A261', scoreColor: (v: number) => v >= 9 ? '#06C167' : v >= 7 ? '#F4A261' : '#E63946', fmtScore: (v: number) => String(v), sourceParam: 'NPS+Survey' },
+                { type: 'CSAT', filter: (s: typeof data[0]) => s.csat_score !== null, score: (s: typeof data[0]) => s.csat_score!, accentColor: '#2D6A9F', badgeBg: '#EBF3FB', badgeText: '#2D6A9F', scoreColor: (v: number) => v >= 9 ? '#06C167' : v >= 7 ? '#F4A261' : '#E63946', fmtScore: (v: number) => String(v), sourceParam: 'CSAT+Survey' },
+                { type: 'CES', filter: (s: typeof data[0]) => s.ces_score !== null, score: (s: typeof data[0]) => s.ces_score as unknown as string, accentColor: '#7B4F9E', badgeBg: '#F3EEF9', badgeText: '#7B4F9E', scoreColor: (v: string) => v === 'Yes' ? '#06C167' : v === 'No' ? '#E63946' : '#AAAAAA', fmtScore: (v: string) => v, sourceParam: 'CES+Survey' },
+                { type: 'ORS', filter: (s: typeof data[0]) => s.ors_score !== null, score: (s: typeof data[0]) => s.ors_score as unknown as string, accentColor: '#2A9D8F', badgeBg: '#E6F5F4', badgeText: '#2A9D8F', scoreColor: (v: string) => v === 'Yes' ? '#06C167' : v === 'No' ? '#E63946' : '#AAAAAA', fmtScore: (v: string) => v, sourceParam: 'ORS+Survey' },
+              ];
+              return configs.map(cfg => {
+                const filtered = data.filter(cfg.filter).sort((a, b) => parseDate(b.captured_at) - parseDate(a.captured_at));
+                const rec = filtered[0];
+                if (!rec) return null;
+                const scoreVal = cfg.score(rec);
+                const sentColors: Record<string, string> = { Positive: '#06C167', Negative: '#E63946', Neutral: '#AAAAAA', Mixed: '#F4A261' };
+                const sentBgs: Record<string, string> = { Positive: '#E8F9F0', Negative: '#FEECEE', Neutral: '#F6F6F6', Mixed: '#FEF3E8' };
+                const verbatim = rec.verbatim_text.length > 140 ? rec.verbatim_text.slice(0, 140) + '…' : rec.verbatim_text;
+                const drivers = rec.key_drivers_selected.slice(0, 2);
+                return (
+                  <div key={cfg.type} className="bg-white border border-[#EBEBEB] rounded-xl overflow-hidden">
+                    <div style={{ height: 3, background: cfg.accentColor }} />
+                    <div className="p-4">
+                      {/* Row 1 */}
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, background: cfg.badgeBg, color: cfg.badgeText, borderRadius: 20, padding: '2px 8px', textTransform: 'uppercase' }}>{cfg.type}</span>
+                        <span style={{ fontFamily: 'Syne, sans-serif', fontSize: 22, fontWeight: 700, color: (cfg.scoreColor as any)(scoreVal) }}>{typeof scoreVal === 'number' ? scoreVal : scoreVal}</span>
+                      </div>
+                      {/* Row 2 */}
+                      <div className="mt-1.5" style={{ fontFamily: 'DM Mono, monospace', fontSize: 10, color: '#AAAAAA' }}>
+                        {rec.captured_at} <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#717171', marginLeft: 4 }} className="truncate inline-block max-w-[120px] align-bottom">· {rec.account_name}</span>
+                      </div>
+                      {/* Divider */}
+                      <div className="h-px bg-[#F6F6F6] my-2" />
+                      {/* Row 3 — Verbatim */}
+                      <div style={{ borderLeft: `2px solid ${sentColors[rec.sentiment] || '#AAAAAA'}`, paddingLeft: 10 }}>
+                        <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 12, color: '#333', fontStyle: 'italic', lineHeight: 1.5 }}>"{verbatim}"</p>
+                      </div>
+                      {/* Divider */}
+                      <div className="h-px bg-[#F6F6F6] my-2" />
+                      {/* Row 4 — Drivers */}
+                      {drivers.length > 0 && (
+                        <div className="mb-2">
+                          <div style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, color: '#AAAAAA', textTransform: 'uppercase', marginBottom: 4 }}>Drivers</div>
+                          <div className="flex flex-wrap gap-1">
+                            {drivers.map(d => (
+                              <span key={d} style={{ fontFamily: 'DM Mono, monospace', fontSize: 9, background: '#EBF3FB', color: '#2D6A9F', borderRadius: 20, padding: '2px 6px' }}>{d}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {/* Row 5 — Bottom meta */}
+                      <div className="flex items-center justify-between">
+                        <span style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 10, background: sentBgs[rec.sentiment] || '#F6F6F6', color: sentColors[rec.sentiment] || '#AAAAAA', borderRadius: 20, padding: '2px 8px' }}>{rec.sentiment}</span>
+                        <button onClick={() => navigate(`/feedback?source=${cfg.sourceParam}`)} style={{ fontFamily: 'DM Sans, sans-serif', fontSize: 11, color: '#06C167', background: 'none', border: 'none', cursor: 'pointer' }}>View more →</button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
         </div>
 
         {/* ROW 1 — Sentiment Donut + Key Drivers (60/40) */}
