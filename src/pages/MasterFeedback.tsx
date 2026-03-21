@@ -3,7 +3,7 @@ import { useVocData } from '@/context/VocDataContext';
 import LoadingScreen from '@/components/LoadingScreen';
 import { CDJ_STAGES, SOURCE_DISPLAY_MAP } from '@/types/voc';
 import { countPipeField, sortedEntries, getThemeColor, SOURCE_BADGE_COLORS, ACTION_TAG_COLORS, SENTIMENT_COLORS } from '@/lib/voc-utils';
-import { ChevronDown, ChevronRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Search, ArrowUpDown } from 'lucide-react';
 import type { VocSignal } from '@/types/voc';
 
 const DISPLAY_SOURCES = [
@@ -20,6 +20,7 @@ export default function MasterFeedback() {
   const [visibleCount, setVisibleCount] = useState(25);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
+  const [dateSort, setDateSort] = useState<'desc' | 'asc'>('desc');
 
   const filtered = useMemo(() => {
     let result = data;
@@ -37,8 +38,13 @@ export default function MasterFeedback() {
     if (activeActionTag) {
       result = result.filter(s => s.action_tag === activeActionTag);
     }
+    result = [...result].sort((a, b) =>
+      dateSort === 'desc'
+        ? b.captured_at.localeCompare(a.captured_at)
+        : a.captured_at.localeCompare(b.captured_at)
+    );
     return result;
-  }, [data, selectedStage, selectedSources, search, activeActionTag]);
+  }, [data, selectedStage, selectedSources, search, activeActionTag, dateSort]);
 
   const toggleSource = (src: string) => {
     if (src === 'All Sources') {
@@ -122,8 +128,17 @@ export default function MasterFeedback() {
                 className="w-full pl-10 pr-4 py-2.5 border border-uber-gray-border rounded-lg font-body text-sm text-uber-ink-2 bg-white focus:outline-none focus:border-uber-green"
               />
             </div>
-            <div className="font-mono text-[11px] text-uber-ink-3">
-              Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} records
+            <div className="flex items-center justify-between">
+              <span className="font-mono text-[11px] text-uber-ink-3">
+                Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} records
+              </span>
+              <button
+                onClick={() => setDateSort(d => d === 'desc' ? 'asc' : 'desc')}
+                className="flex items-center gap-1 font-mono text-[11px] text-uber-ink-3 hover:text-uber-black transition-colors px-2 py-1 rounded-md hover:bg-uber-gray-card active:scale-[0.97]"
+              >
+                <ArrowUpDown size={12} />
+                {dateSort === 'desc' ? 'Newest first' : 'Oldest first'}
+              </button>
             </div>
 
             {filtered.length === 0 && (
