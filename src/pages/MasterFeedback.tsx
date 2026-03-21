@@ -19,6 +19,7 @@ export default function MasterFeedback() {
   const [search, setSearch] = useState('');
   const [visibleCount, setVisibleCount] = useState(25);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [activeActionTag, setActiveActionTag] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     let result = data;
@@ -33,8 +34,11 @@ export default function MasterFeedback() {
       const q = search.toLowerCase();
       result = result.filter(s => s.verbatim_text.toLowerCase().includes(q));
     }
+    if (activeActionTag) {
+      result = result.filter(s => s.action_tag === activeActionTag);
+    }
     return result;
-  }, [data, selectedStage, selectedSources, search]);
+  }, [data, selectedStage, selectedSources, search, activeActionTag]);
 
   const toggleSource = (src: string) => {
     if (src === 'All Sources') {
