@@ -62,6 +62,12 @@ function getHeatCellStyle(count: number, isPositive: boolean) {
   return { bg: '#E63946', text: '#FFFFFF' };
 }
 
+const TEAM_THEMES: Record<string, string[]> = {
+  'Product': ['Dashboard Visibility', 'Adoption Barrier', 'Proactive Onboarding', 'Feature Request for Product Roadmap'],
+  'CS / Support': ['Invoicing & Support Friction', 'Adoption Barrier', 'Integration Friction', 'Poor Fit / Churn Signal', 'Relationship Quality'],
+  'Marketing': ['Cost Savings Win', 'Proactive Onboarding', 'Dashboard Visibility', 'Poor Fit / Churn Signal', 'Perceived Value for Price'],
+};
+
 export default function SignalHeatMatrix({ data, dimFilter }: { data: VocSignal[]; dimFilter?: string }) {
   const navigate = useNavigate();
   const [tooltip, setTooltip] = useState<{ x: number; y: number; text: string } | null>(null);
