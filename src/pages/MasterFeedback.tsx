@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useVocData } from '@/context/VocDataContext';
+import { useSearchParams } from 'react-router-dom';
 import LoadingScreen from '@/components/LoadingScreen';
 import { CDJ_STAGES, SOURCE_DISPLAY_MAP } from '@/types/voc';
 import { countPipeField, sortedEntries, getThemeColor, SOURCE_BADGE_COLORS, ACTION_TAG_COLORS, SENTIMENT_COLORS } from '@/lib/voc-utils';
