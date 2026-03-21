@@ -179,9 +179,12 @@ function FeedbackCard({ signal, expanded, onToggle }: { signal: VocSignal; expan
           <span className="font-body text-[13px] font-bold text-uber-black">{signal.customer_name}</span>
           <span className="font-body text-xs text-uber-ink-2">· {signal.account_name} · {signal.sales_segment} · {signal.mega_region}</span>
         </div>
-        <p className="font-body text-xs text-uber-ink-3 italic mt-1.5 leading-relaxed">
-          {signal.verbatim_text}
-        </p>
+        <div className="mt-1.5 relative pl-4">
+          <span className="absolute left-0 top-0 font-display text-2xl text-uber-green leading-none select-none">"</span>
+          <p className="font-body text-xs text-uber-ink-3 italic leading-relaxed">
+            {signal.verbatim_text}<span className="font-display text-lg text-uber-green leading-none select-none ml-0.5 inline">"</span>
+          </p>
+        </div>
       </div>
 
       {expanded && (
