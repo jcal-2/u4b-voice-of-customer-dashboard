@@ -183,10 +183,10 @@ export default function GaugeCard({
 
           {/* Scale labels */}
           <text x={cx - r + 5} y={h + 12} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace">
-            {min}
+            {min === -100 ? '−100' : min}
           </text>
           <text x={cx + r - 5} y={h + 12} fill="#AAAAAA" fontSize={10} fontFamily="DM Mono, monospace" textAnchor="end">
-            {max > 1 ? (max === 10 ? '10' : `+${max}`) : `${max * 100}%`}
+            {min === -100 ? '+100' : max === 100 ? '100%' : String(max)}
           </text>
         </svg>
       </div>
