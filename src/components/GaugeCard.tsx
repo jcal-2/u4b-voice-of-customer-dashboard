@@ -56,11 +56,11 @@ export default function GaugeCard({
   }, [pct]);
 
   // SVG arc params
-  const w = 160;
-  const h = 90;
+  const w = 180;
+  const h = 100;
   const cx = w / 2;
   const cy = h;
-  const r = 65;
+  const r = 72;
   const strokeW = 10;
 
   const arcPath = (startAngle: number, endAngle: number) => {
