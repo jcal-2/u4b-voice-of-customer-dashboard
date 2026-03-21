@@ -150,6 +150,15 @@ export default function MasterFeedback() {
                 className="w-full pl-10 pr-4 py-2.5 border border-uber-gray-border rounded-lg font-body text-sm text-uber-ink-2 bg-white focus:outline-none focus:border-uber-green"
               />
             </div>
+            {activeTheme && (
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-mono text-[11px] text-uber-ink-3">Filtered by theme:</span>
+                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-mono bg-[#EBF3FB] text-[#2D6A9F]">
+                  {activeTheme}
+                  <button onClick={() => setActiveTheme(null)} className="ml-1 hover:text-[#E63946] transition-colors">✕</button>
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] text-uber-ink-3">
                 Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} records
