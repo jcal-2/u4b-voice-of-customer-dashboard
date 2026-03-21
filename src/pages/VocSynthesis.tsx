@@ -4,7 +4,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import { calcNps, calcCsat, calcCes, calcOrs, countByField, countPipeField, sortedEntries, getThemeColor, SENTIMENT_COLORS, ACTION_TAG_COLORS } from '@/lib/voc-utils';
 import GaugeCard from '@/components/GaugeCard';
 
-import { PieChart, Pie, Cell, AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useNavigate } from 'react-router-dom';
 
 export default function VocSynthesis() {
@@ -352,51 +352,8 @@ export default function VocSynthesis() {
             })()}
           </div>
 
-          {/* Signal Velocity */}
-          <div className="lg:col-span-3 bg-white border border-[#EBEBEB] rounded-2xl p-5">
-            <h3 className="font-display text-base font-bold text-uber-black">Signal Velocity</h3>
-            <p className="font-mono text-[10px] text-uber-ink-3 mb-3">Monthly signal volume trend</p>
-            <ResponsiveContainer width="100%" height={180}>
-              <AreaChart data={stats.monthlyData} margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
-                <defs>
-                  <linearGradient id="areaGreen" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06C167" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#06C167" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontFamily: 'DM Mono', fontSize: 9, fill: '#AAAAAA' }}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={2}
-                />
-                <Tooltip content={({ active, payload }) => {
-                  if (!active || !payload?.[0]) return null;
-                  const d = payload[0].payload;
-                  return (
-                    <div className="bg-white border border-[#EBEBEB] rounded-lg px-3 py-2" style={{ fontFamily: 'DM Sans', fontSize: 12, color: '#333' }}>
-                      {d.month}: {d.count} signals
-                    </div>
-                  );
-                }} />
-                <Area
-                  type="monotone"
-                  dataKey="count"
-                  stroke="#06C167"
-                  strokeWidth={2}
-                  fill="url(#areaGreen)"
-                  animationDuration={600}
-                  animationEasing="ease-out"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-            {stats.peakMonth && (
-              <p className="font-mono text-[10px] text-uber-ink-3 mt-2">
-                Peak month: {stats.peakMonth.month} · {stats.peakMonth.count} signals
-              </p>
-            )}
-          </div>
+          {/* Monthly KPI Trends */}
+          <MonthlyKpiTrends data={data} />
 
           {/* Action Urgency Panel */}
           <ActionUrgencyPanel actionCounts={stats.actionCounts} />
