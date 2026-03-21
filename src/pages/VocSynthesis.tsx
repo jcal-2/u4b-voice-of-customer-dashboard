@@ -216,31 +216,43 @@ export default function VocSynthesis() {
 
         {/* Trend Comparison */}
         <div className="bg-uber-black rounded-uber p-6 text-white">
-          <h3 className="font-display text-lg font-bold mb-4">H1 vs H2 Trend Comparison</h3>
+          <h3 className="font-display text-lg font-bold mb-1">H1 vs H2 Trend Comparison</h3>
+          <p className="font-mono text-[11px] text-uber-ink-3 mb-5">Split at Jul 1 2025 · H1: {stats.h1Vol} signals · H2: {stats.h2Vol} signals</p>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-700">
-                    <th className="text-left font-mono text-xs text-uber-ink-3 pb-2">Metric</th>
-                    <th className="text-right font-mono text-xs text-uber-ink-3 pb-2">H1</th>
-                    <th className="text-right font-mono text-xs text-uber-ink-3 pb-2">H2</th>
-                    <th className="text-right font-mono text-xs text-uber-ink-3 pb-2">Delta</th>
+                    <th className="text-left font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">Metric</th>
+                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">H1</th>
+                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">H2</th>
+                    <th className="text-right font-mono text-[11px] text-uber-ink-4 uppercase tracking-wider pb-2">Delta</th>
                   </tr>
                 </thead>
-                <tbody className="font-mono text-xs">
-                  <TrendRow label="NPS" h1={stats.h1Nps.score} h2={stats.h2Nps.score} prefix="+" />
-                  <TrendRow label="CSAT Avg" h1={stats.h1Csat.avg} h2={stats.h2Csat.avg} />
-                  <TrendRow label="Neg %" h1={stats.h1Neg} h2={stats.h2Neg} suffix="%" invert />
-                  <TrendRow label="Pos %" h1={stats.h1Pos} h2={stats.h2Pos} suffix="%" />
-                  <TrendRow label="Volume" h1={stats.h1Vol} h2={stats.h2Vol} />
+                <tbody className="font-mono text-[13px]">
+                  <TrendRow label="NPS" h1={stats.h1Nps.score} h2={stats.h2Nps.score} format="int" />
+                  <TrendRow label="CSAT Avg" h1={stats.h1Csat.avg} h2={stats.h2Csat.avg} format="avg" />
+                  <TrendRow label="Neg %" h1={stats.h1Neg} h2={stats.h2Neg} format="pct" invert />
+                  <TrendRow label="Pos %" h1={stats.h1Pos} h2={stats.h2Pos} format="pct" />
+                  <TrendRow label="Volume" h1={stats.h1Vol} h2={stats.h2Vol} format="int" />
                 </tbody>
               </table>
             </div>
-            <div className="space-y-4 font-body text-[13px] text-gray-400 leading-relaxed">
-              <p><span className="text-uber-green font-semibold">What improved:</span> Positive sentiment increased from H1 to H2, indicating growing satisfaction. Key drivers around reliability and dashboard visibility have been addressed.</p>
-              <p><span className="text-uber-red font-semibold">What got worse:</span> Negative signal rate showed marginal change. Billing and invoicing friction remains a persistent theme across both halves.</p>
-              <p><span className="text-uber-blue font-semibold">What's new in H2:</span> Expansion opportunity signals increased, suggesting mature accounts are finding more use cases. New CES surveys captured fresh onboarding friction data.</p>
+            <div className="space-y-4 font-body text-[13px] leading-[1.7]">
+              <p><span className="text-uber-green font-semibold">What improved: </span><span className="text-gray-400">
+                {stats.h2Pos > stats.h1Pos ? `Positive sentiment rose from ${stats.h1Pos}% to ${stats.h2Pos}%. ` : ''}
+                {stats.h2Nps.score > stats.h1Nps.score ? `NPS improved from ${stats.h1Nps.score > 0 ? '+' : ''}${stats.h1Nps.score} to ${stats.h2Nps.score > 0 ? '+' : ''}${stats.h2Nps.score}. ` : ''}
+                {stats.h2Vol > stats.h1Vol ? `Feedback volume increased, indicating broader program coverage.` : ''}
+              </span></p>
+              <p><span className="text-uber-red font-semibold">What got worse: </span><span className="text-gray-400">
+                {stats.h2Neg >= stats.h1Neg ? `Negative signal rate ${stats.h2Neg > stats.h1Neg ? `rose from ${stats.h1Neg}% to ${stats.h2Neg}%` : `held steady at ${stats.h2Neg}%`}. ` : ''}
+                {stats.h2Csat.avg < stats.h1Csat.avg ? `CSAT average dipped from ${stats.h1Csat.avg.toFixed(1)} to ${stats.h2Csat.avg.toFixed(1)}. ` : ''}
+                Billing and invoicing friction remains a persistent theme across both halves.
+              </span></p>
+              <p><span className="text-uber-blue font-semibold">What's new in H2: </span><span className="text-gray-400">
+                {stats.h2Vol > stats.h1Vol ? `Signal volume grew by ${stats.h2Vol - stats.h1Vol} records. ` : ''}
+                Expansion opportunity signals increased, suggesting mature accounts are finding more use cases. New CES surveys captured fresh onboarding friction data.
+              </span></p>
             </div>
           </div>
         </div>
@@ -352,16 +364,29 @@ function ScorecardOrs({ ors }: { ors: ReturnType<typeof calcOrs> }) {
   );
 }
 
-function TrendRow({ label, h1, h2, prefix = '', suffix = '', invert = false }: { label: string; h1: number; h2: number; prefix?: string; suffix?: string; invert?: boolean }) {
+function TrendRow({ label, h1, h2, format, invert = false }: { label: string; h1: number; h2: number; format: 'int' | 'avg' | 'pct'; invert?: boolean }) {
   const delta = h2 - h1;
   const improving = invert ? delta < 0 : delta > 0;
+
+  const fmt = (v: number) => {
+    if (format === 'avg') return v.toFixed(1);
+    if (format === 'pct') return Math.round(v) + '%';
+    return String(Math.round(v));
+  };
+  const fmtDelta = (d: number) => {
+    const sign = d > 0 ? '+' : '';
+    if (format === 'avg') return sign + d.toFixed(1);
+    if (format === 'pct') return sign + Math.round(d) + 'pp';
+    return sign + Math.round(d);
+  };
+
   return (
     <tr className="border-b border-gray-700">
-      <td className="py-2 text-gray-300">{label}</td>
-      <td className="text-right py-2">{prefix}{h1}{suffix}</td>
-      <td className="text-right py-2">{prefix}{h2}{suffix}</td>
-      <td className="text-right py-2" style={{ color: delta === 0 ? '#AAA' : improving ? '#06C167' : '#E63946' }}>
-        {delta > 0 ? '+' : ''}{delta}{suffix}
+      <td className="py-2.5 text-gray-300">{label}</td>
+      <td className="text-right py-2.5 text-gray-100">{fmt(h1)}</td>
+      <td className="text-right py-2.5 text-gray-100">{fmt(h2)}</td>
+      <td className="text-right py-2.5 font-semibold" style={{ color: delta === 0 ? '#AAA' : improving ? '#06C167' : '#E63946' }}>
+        {fmtDelta(delta)}
       </td>
     </tr>
   );
